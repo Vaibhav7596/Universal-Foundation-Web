@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Universal Foundation CMS</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Styling for the Dashboard adhering to tokens and rich design principles */
+    :root {
+      --sidebar-width: 260px;
+      --admin-green: #2d6a4f;
+      --admin-green-light: #d8f3dc;
+      --admin-green-soft: #52b788;
+      --admin-green-deep: #1a3a2a;
+      --bg-light: #f7f9f6;
+      --border-color: #e2e8f0;
+    }
+
+    body {
+      background: var(--bg-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    /* ─── SIDEBAR ────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--admin-green-deep);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      z-index: 100;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+      transition: var(--transition);
+    }
+    
+    .sidebar-header {
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    .sidebar-header img {
+      height: 38px;
+      border-radius: 8px;
+    }
+    
+    .sidebar-header span {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .sidebar-menu {
+      padding: 24px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+    }
+    .menu-item:hover {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .menu-item.active {
+      color: var(--admin-green-deep);
+      background: var(--admin-green-soft);
+      font-weight: 600;
+    }
+    .menu-item i {
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* ─── MAIN CONTENT AREA ──────────────────────────── */
+    .main-viewport {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .admin-header {
+      height: 68px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .admin-title-area h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.45rem;
+      color: var(--green-deep);
+    }
+
+    .admin-user-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink-mid);
+    }
+    .admin-user-badge i {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--admin-green-light);
+      color: var(--admin-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+
+    .dashboard-body {
+      padding: 40px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    /* ─── TAB CONTENTS ───────────────────────────────── */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      padding: 24px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .stat-card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: var(--admin-green-light);
+      color: var(--admin-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+    .stat-card-info h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-light);
+      margin-bottom: 4px;
+    }
+    .stat-card-info p {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.8rem;
+      color: var(--green-deep);
+      line-height: 1.1;
+    }
+
+    /* ─── CARD FORMS ─────────────────────────────────── */
+    .admin-card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-soft);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    
+    .admin-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+    }
+    .admin-card-header h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.25rem;
+      color: var(--green-deep);
+      margin: 0;
+    }
+
+    .admin-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    @media (max-width: 900px) {
+      .admin-form-row { grid-template-columns: 1fr; }
+    }
+
+    .btn-save {
+      background: var(--admin-green);
+      color: var(--white);
+      box-shadow: 0 4px 12px rgba(45,106,79,0.2);
+    }
+    .btn-save:hover {
+      background: var(--admin-green-deep);
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+    .btn-cancel {
+      background: var(--earth-sand);
+      color: var(--ink-mid);
+      border: 1px solid var(--earth-stone);
+    }
+    .btn-cancel:hover {
+      background: var(--earth-stone);
+      transform: translateY(-2px);
+    }
+
+    /* ─── TABLES / LISTS ─────────────────────────────── */
+    .admin-table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.92rem;
+    }
+    .admin-table th {
+      background: var(--bg-light);
+      padding: 14px 16px;
+      font-weight: 600;
+      color: var(--ink-mid);
+      border-bottom: 1.5px solid var(--border-color);
+    }
+    .admin-table td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--ink-mid);
+    }
+    .admin-table tr:hover td {
+      background: rgba(26,58,42,0.01);
+    }
+
+    .action-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+    }
+    .action-edit {
+      background: var(--admin-green-light);
+      color: var(--admin-green);
+    }
+    .action-edit:hover {
+      background: var(--admin-green-soft);
+      color: var(--white);
+    }
+    .action-delete {
+      background: #fde8e8;
+      color: #9b1c1c;
+    }
+    .action-delete:hover {
+      background: #e74c3c;
+      color: var(--white);
+    }
+
+    /* ─── GALLERY MANAGER GRID ───────────────────────── */
+    .admin-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .admin-gallery-card {
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-soft);
+      group: hover;
+    }
+    .admin-gallery-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .admin-gallery-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(26,58,42,0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .admin-gallery-card:hover .admin-gallery-card-overlay {
+      opacity: 1;
+    }
+
+    /* ─── MODALS ─────────────────────────────────────── */
+    .admin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,58,42,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .admin-modal.active {
+      display: flex;
+    }
+    .admin-modal-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 640px;
+      box-shadow: var(--shadow-mid);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      animation: modalSlide 0.3s ease;
+    }
+    @keyframes modalSlide {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .admin-modal-header {
+      padding: 24px;
+      background: var(--admin-green-deep);
+      color: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .admin-modal-header h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    .admin-modal-close {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .admin-modal-close:hover {
+      color: var(--white);
+    }
+    .admin-modal-body {
+      padding: 32px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .admin-modal-footer {
+      padding: 20px 32px;
+      background: var(--bg-light);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    /* ─── UPLOADER COMPONENT ─────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--earth-stone);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      text-align: center;
+      background: var(--bg-light);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .upload-zone:hover {
+      border-color: var(--admin-green-soft);
+      background: var(--admin-green-light);
+    }
+    .upload-zone i {
+      font-size: 2.2rem;
+      color: var(--admin-green);
+      margin-bottom: 12px;
+    }
+    .upload-zone p {
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      margin-bottom: 6px;
+    }
+
+    /* ─── MOBILE BURGER DRAWER ───────────────────────── */
+    .mobile-admin-bar {
+      display: none;
+      background: var(--admin-green-deep);
+      color: var(--white);
+      height: 60px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: sticky;
+      top: 0;
+      z-index: 101;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .mobile-admin-burger {
+      background: transparent;
+      border: none;
+      color: var(--white);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      
+      .sidebar {
+        position: fixed;
+        top: 60px;
+        left: -260px;
+        bottom: 0;
+        width: var(--sidebar-width);
+      }
+      .sidebar.open {
+        left: 0;
+      }
+      
+      .mobile-admin-bar { display: flex; }
+      .admin-header { display: none; }
+      
+      .main-viewport { height: calc(100vh - 60px); }
+      .dashboard-body { padding: 24px; }
+      .admin-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- MOBILE BAR (Visible <= 768px) -->
+<div class="mobile-admin-bar">
+  <button class="mobile-admin-burger" id="mobile-burger">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+  <span style="font-family: 'DM Serif Display', serif; font-size: 1rem;">Universal Admin</span>
+  <button class="mobile-admin-burger" onclick="logout()">
+    <i class="fa-solid fa-right-from-bracket"></i>
+  </button>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img src="../images/logo.jpeg" alt="Universal Foundation">
+    <span>Universal CMS</span>
+  </div>
+  
+  <div class="sidebar-menu">
+    <button class="menu-item active" data-target="overview">
+      <i class="fa-solid fa-chart-line"></i> Overview
+    </button>
+    <button class="menu-item" data-target="homepage">
+      <i class="fa-solid fa-home"></i> Homepage Text
+    </button>
+    <button class="menu-item" data-target="events">
+      <i class="fa-solid fa-calendar-days"></i> Events
+    </button>
+    <button class="menu-item" data-target="internships">
+      <i class="fa-solid fa-graduation-cap"></i> Internship Schedules
+    </button>
+    <button class="menu-item" data-target="gallery">
+      <i class="fa-solid fa-images"></i> Gallery Manager
+    </button>
+    <button class="menu-item" data-target="blogs">
+      <i class="fa-solid fa-newspaper"></i> Blog Manager
+    </button>
+    <button class="menu-item" data-target="contact">
+      <i class="fa-solid fa-address-book"></i> Contact Settings
+    </button>
+    <button class="menu-item" data-target="security">
+      <i class="fa-solid fa-shield-halved"></i> Security &amp; Credentials
+    </button>
+    
+    <button class="menu-item" onclick="logout()" style="margin-top: auto; color: #ff8080;">
+      <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+    </button>
+  </div>
+  
+  <div class="sidebar-footer">
+    <span>v1.0.0</span>
+    <span>Universal © 2026</span>
+  </div>
+</div>
+
+<!-- MAIN VIEWPORT -->
+<div class="main-viewport">
+  <!-- Desktop Header -->
+  <header class="admin-header">
+    <div class="admin-title-area">
+      <h1 id="viewport-title">Overview Dashboard</h1>
+    </div>
+    <div class="admin-user-badge">
+      <i class="fa-solid fa-user-shield"></i>
+      <span id="badge-username">Administrator</span>
+    </div>
+  </header>
+
+  <!-- BODY CONTENT -->
+  <main class="dashboard-body">
+    
+    <!-- ─── TAB: OVERVIEW ──────────────────────────────── -->
+    <div class="tab-content active" id="overview">
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <div class="stat-card-icon"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="stat-card-info">
+            <h3>Active Events</h3>
+            <p id="stat-events-count">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon"><i class="fa-solid fa-newspaper"></i></div>
+          <div class="stat-card-info">
+            <h3>Blog Posts</h3>
+            <p id="stat-blogs-count">0</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon"><i class="fa-solid fa-image"></i></div>
+          <div class="stat-card-info">
+            <h3>Gallery Assets</h3>
+            <p id="stat-gallery-count">0</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Welcome to Universal Foundation CMS</h2>
+        </div>
+        <p>This dynamic custom CMS provides your NGO staff with a streamlined, code-free interface to modify website contents dynamically. Select an option from the sidebar to manage events, compose blog entries, handle media assets, or update the dynamic contact details.</p>
+        <div style="margin-top: 24px; padding: 16px; background: #e7f4ec; border-left: 4px solid var(--admin-green-soft); border-radius: 4px; color: var(--green-deep); font-size: 0.88rem;">
+          <strong><i class="fa-solid fa-circle-info"></i> Security Reminder:</strong> We highly recommend updating your default administrator credentials using the "Security &amp; Credentials" tab to safeguard dashboard access.
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: HOMEPAGE TEXTS ────────────────────────── -->
+    <div class="tab-content" id="homepage">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Homepage Hero Section</h2>
+        </div>
+        <form id="hero-settings-form">
+          <div class="form-group">
+            <label>Hero Eyebrow (e.g. Est. 2000 ...)</label>
+            <input type="text" id="hero-eyebrow" required>
+          </div>
+          <div class="form-group">
+            <label>Hero Title (Allows standard HTML tags like &lt;br&gt; and &lt;em&gt;)</label>
+            <input type="text" id="hero-title" required>
+          </div>
+          <div class="form-group">
+            <label>Hero Description</label>
+            <textarea id="hero-desc" style="min-height: 90px;" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-save">Save Hero Texts</button>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Homepage About Intro</h2>
+        </div>
+        <form id="about-settings-form">
+          <div class="form-group">
+            <label>About Section Label</label>
+            <input type="text" id="about-label" required>
+          </div>
+          <div class="form-group">
+            <label>About Title (Allows standard HTML tags)</label>
+            <input type="text" id="about-title" required>
+          </div>
+          <div class="form-group">
+            <label>About Description</label>
+            <textarea id="about-desc" style="min-height: 120px;" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-save">Save About Texts</button>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Homepage Impact Counters</h2>
+        </div>
+        <form id="stats-settings-form">
+          <div class="admin-form-row" id="homepage-stats-container">
+            <!-- Dynamic stats forms generated here -->
+          </div>
+          <button type="submit" class="btn btn-primary btn-save">Save Impact Statistics</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ─── TAB: EVENTS ────────────────────────────────── -->
+    <div class="tab-content" id="events">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Upcoming Events</h2>
+          <button class="btn btn-primary" onclick="openEventModal()" style="font-size:0.85rem; padding:8px 16px;"><i class="fa fa-plus"></i> Add Event</button>
+        </div>
+        
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Icon</th>
+                <th>Title</th>
+                <th>Location</th>
+                <th>Description</th>
+                <th style="width: 100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="events-table-body">
+              <!-- Dynamically hydrated events -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: INTERNSHIPS ───────────────────────────── -->
+    <div class="tab-content" id="internships">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>CSSI 21-Day Internship Schedule Settings</h2>
+        </div>
+        <form id="internship-form">
+          <div class="admin-form-row">
+            <div class="form-group">
+              <label>Application Status Banner (e.g. Applications Open)</label>
+              <input type="text" id="internship-title" required>
+            </div>
+            <div class="form-group">
+              <label>Batch Schedule Name (e.g. June-July 2026 Batch)</label>
+              <input type="text" id="internship-batch" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Applications Open Status</label>
+            <select id="internship-status">
+              <option value="open">Active (Applications Open / Accept Applications)</option>
+              <option value="closed">Closed (Applications Closed / Greyed-out CTA)</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Internship Schedule Description</label>
+            <textarea id="internship-desc" style="min-height: 120px;" required></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-save">Save Internship Schedule</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ─── TAB: GALLERY ───────────────────────────────── -->
+    <div class="tab-content" id="gallery">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Upload Gallery Image</h2>
+        </div>
+        <form id="gallery-upload-form" enctype="multipart/form-data">
+          <div class="upload-zone" onclick="document.getElementById('gallery-file-input').click()">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>Click here to choose image file</p>
+            <p style="font-size:0.75rem; color:#888;">PNG, JPG, JPEG, WEBP files up to 5MB are accepted</p>
+            <input type="file" id="gallery-file-input" name="galleryImage" style="display:none;" accept="image/*" onchange="submitGalleryUpload()">
+          </div>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Gallery Image Library</h2>
+        </div>
+        <div class="admin-gallery-grid" id="admin-gallery-container">
+          <!-- Dynamic gallery loading -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: BLOGS ─────────────────────────────────── -->
+    <div class="tab-content" id="blogs">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Manage Blog Articles</h2>
+          <button class="btn btn-primary" onclick="openBlogModal()" style="font-size:0.85rem; padding:8px 16px;"><i class="fa fa-pencil"></i> Write Post</button>
+        </div>
+        
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Cover</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Publish Date</th>
+                <th>Summary</th>
+                <th style="width: 100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="blogs-table-body">
+              <!-- Dynamically hydrated blogs -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── TAB: CONTACT ───────────────────────────────── -->
+    <div class="tab-content" id="contact">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Global Contact details</h2>
+        </div>
+        <form id="contact-settings-form">
+          <div class="admin-form-row">
+            <div class="form-group">
+              <label>Phone Number (Display Format)</label>
+              <input type="text" id="contact-phone" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number (Digits Only for Tel Links)</label>
+              <input type="text" id="contact-phoneRaw" required>
+            </div>
+          </div>
+
+          <div class="admin-form-row">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="contact-email" required>
+            </div>
+            <div class="form-group">
+              <label>WhatsApp Link URL</label>
+              <input type="url" id="contact-whatsapp" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Physical Address / Location</label>
+            <input type="text" id="contact-location" required>
+          </div>
+
+          <div class="form-group">
+            <label>Google Maps Iframe Embed Source URL (Embed coordinates only)</label>
+            <textarea id="contact-mapUrl" style="min-height:90px;" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-save">Save Contact details</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ─── TAB: SECURITY ──────────────────────────────── -->
+    <div class="tab-content" id="security">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Update Credentials (Change Password)</h2>
+        </div>
+        
+        <form id="security-credentials-form">
+          <div class="form-group">
+            <label>Current Admin Password</label>
+            <input type="password" id="sec-current-pass" required placeholder="Type current password">
+          </div>
+          
+          <div class="admin-form-row" style="border-top:1px solid #eee; padding-top:20px; margin-top:20px;">
+            <div class="form-group">
+              <label>New Dashboard Username</label>
+              <input type="text" id="sec-new-user" required placeholder="Enter new username">
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="sec-new-pass" required placeholder="Enter new password">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-save">Change Credentials</button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- EVENT EDIT/ADD MODAL -->
+<div class="admin-modal" id="event-modal">
+  <div class="admin-modal-card">
+    <div class="admin-modal-header">
+      <h3 id="event-modal-title">Add New Event</h3>
+      <button class="admin-modal-close" onclick="closeEventModal()"><i class="fa fa-close"></i></button>
+    </div>
+    <form id="event-modal-form">
+      <input type="hidden" id="event-id-input">
+      <div class="admin-modal-body">
+        <div class="admin-form-row">
+          <div class="form-group">
+            <label>Event Date (e.g. 10 June 2026)</label>
+            <input type="text" id="event-date-input" required>
+          </div>
+          <div class="form-group">
+            <label>Font-Awesome Icon class (e.g. fa-seedling, fa-heart-pulse)</label>
+            <input type="text" id="event-icon-input" required placeholder="fa-calendar">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Event Title</label>
+          <input type="text" id="event-title-input" required>
+        </div>
+
+        <div class="form-group">
+          <label>Event Location (e.g. Surat, Gujarat)</label>
+          <input type="text" id="event-location-input" required>
+        </div>
+
+        <div class="form-group">
+          <label>Event Description</label>
+          <textarea id="event-desc-input" style="min-height:100px;" required></textarea>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-cancel" onclick="closeEventModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-save">Save Event</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- BLOG EDIT/ADD MODAL -->
+<div class="admin-modal" id="blog-modal">
+  <div class="admin-modal-card" style="max-width:760px;">
+    <div class="admin-modal-header">
+      <h3 id="blog-modal-title">Write New Post</h3>
+      <button class="admin-modal-close" onclick="closeBlogModal()"><i class="fa fa-close"></i></button>
+    </div>
+    <form id="blog-modal-form" enctype="multipart/form-data">
+      <input type="hidden" id="blog-id-input">
+      <div class="admin-modal-body">
+        <div class="admin-form-row">
+          <div class="form-group">
+            <label>Blog Post Title</label>
+            <input type="text" id="blog-title-input" required>
+          </div>
+          <div class="form-group">
+            <label>Category (e.g. Youth Education, Disaster Management)</label>
+            <input type="text" id="blog-category-input" required placeholder="NGO Activities">
+          </div>
+        </div>
+
+        <div class="admin-form-row">
+          <div class="form-group">
+            <label>Publish Date (Blank for Auto Today)</label>
+            <input type="text" id="blog-date-input" placeholder="27 May 2026">
+          </div>
+          <div class="form-group">
+            <label>Cover Image (JPEG, PNG, WEBP)</label>
+            <input type="file" id="blog-image-input" name="coverImage" accept="image/*">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Short Summary (A concise, compelling overview card description)</label>
+          <input type="text" id="blog-summary-input" required placeholder="A short 1-2 sentence preview text...">
+        </div>
+
+        <div class="form-group">
+          <label>Post Body Content (Write paragraph tags like &lt;p&gt;...&lt;/p&gt; and headings like &lt;h3&gt;...&lt;/h3&gt;)</label>
+          <textarea id="blog-content-input" style="min-height:200px;" required placeholder="Write your full article body here. Support standard paragraph and heading HTML tags."></textarea>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-cancel" onclick="closeBlogModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-save">Publish Article</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ─── AUTHENTICATION CHECK ─────────────────────────────────
+  let globalSettings = {};
+  
+  fetch('/api/auth/check')
+    .then(res => res.json())
+    .then(data => {
+      if (!data.authenticated) {
+        window.location.href = 'index.html';
+      } else {
+        document.getElementById('badge-username').textContent = data.username;
+        initializeDashboard();
+      }
+    })
+    .catch(() => {
+      window.location.href = 'index.html';
+    });
+
+  function logout() {
+    fetch('/api/auth/logout', { method: 'POST' })
+      .then(() => {
+        window.location.href = 'index.html';
+      });
+  }
+
+  // ─── MOBILE BURGER DRAWER NAV ─────────────────────────────
+  const mobileBurger = document.getElementById('mobile-burger');
+  const sidebar = document.getElementById('sidebar');
+  if (mobileBurger && sidebar) {
+    mobileBurger.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+    
+    // Close sidebar on navigate click
+    document.querySelectorAll('.menu-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+      });
+    });
+  }
+
+  // ─── TOASTS POPUPS ────────────────────────────────────────
+  function showToast(msg, type = "success") {
+    // Custom beautiful floating toast notification
+    const existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = msg;
+    toast.style.cssText = `
+      position:fixed; bottom:28px; right:28px;
+      background:${type === "success" ? "#2d6a4f" : "#a94442"};
+      color:white; padding:14px 22px;
+      border-radius:8px; font-size:0.9rem;
+      font-family:'DM Sans',sans-serif;
+      box-shadow:0 8px 28px rgba(0,0,0,0.18);
+      z-index:9999; opacity:0;
+      transform:translateY(10px);
+      transition:opacity 0.3s,transform 0.3s;
+      max-width:320px; line-height:1.5;
+    `;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.style.opacity = "1";
+      toast.style.transform = "translateY(0)";
+    });
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+
+  // ─── TAB NAVIGATION SWITCH ────────────────────────────────
+  const menuButtons = document.querySelectorAll('.menu-item');
+  const tabContents = document.querySelectorAll('.tab-content');
+  const viewportTitle = document.getElementById('viewport-title');
+
+  menuButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.getAttribute('data-target');
+      if (!targetTab) return;
+
+      menuButtons.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(t => t.classList.remove('active'));
+
+      btn.classList.add('active');
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) targetContent.classList.add('active');
+
+      // Update Header title
+      viewportTitle.textContent = btn.innerText.trim();
+    });
+  });
+
+  // ─── INITIALIZE DASHBOARD & DATA ──────────────────────────
+  function initializeDashboard() {
+    loadSettings();
+    loadEvents();
+    loadInternships();
+    loadGallery();
+    loadBlogs();
+  }
+
+  // ─── LOAD & SAVE GLOBAL SETTINGS ──────────────────────────
+  function loadSettings() {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(settings => {
+        globalSettings = settings;
+
+        // Populate Hero form
+        document.getElementById('hero-eyebrow').value = settings.hero.eyebrow;
+        document.getElementById('hero-title').value = settings.hero.title;
+        document.getElementById('hero-desc').value = settings.hero.description;
+
+        // Populate About form
+        document.getElementById('about-label').value = settings.aboutIntro.label;
+        document.getElementById('about-title').value = settings.aboutIntro.title;
+        document.getElementById('about-desc').value = settings.aboutIntro.description;
+
+        // Populate Contact Form
+        document.getElementById('contact-phone').value = settings.contact.phone;
+        document.getElementById('contact-phoneRaw').value = settings.contact.phoneRaw;
+        document.getElementById('contact-email').value = settings.contact.email;
+        document.getElementById('contact-whatsapp').value = settings.contact.whatsapp;
+        document.getElementById('contact-location').value = settings.contact.location;
+        document.getElementById('contact-mapUrl').value = settings.contact.mapUrl;
+
+        // Hydrate Impact Counters Forms
+        const statsContainer = document.getElementById('homepage-stats-container');
+        if (statsContainer && settings.stats) {
+          statsContainer.innerHTML = settings.stats.map((s, idx) => `
+            <div class="form-group">
+              <label>Stat ${idx+1} Label (e.g. Lives Impacted)</label>
+              <input type="text" class="stat-label-input" data-id="${s.id}" value="${s.label}" required>
+              <label style="margin-top:8px;">Stat ${idx+1} Count target (e.g. 1000)</label>
+              <input type="text" class="stat-target-input" data-id="${s.id}" value="${s.target}" required>
+            </div>
+          `).join('');
+        }
+      });
+  }
+
+  // Save Settings Handlers
+  document.getElementById('hero-settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const hero = {
+      eyebrow: document.getElementById('hero-eyebrow').value.trim(),
+      title: document.getElementById('hero-title').value.trim(),
+      description: document.getElementById('hero-desc').value.trim()
+    };
+    saveSettingsData({ hero });
+  });
+
+  document.getElementById('about-settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const aboutIntro = {
+      label: document.getElementById('about-label').value.trim(),
+      title: document.getElementById('about-title').value.trim(),
+      description: document.getElementById('about-desc').value.trim()
+    };
+    saveSettingsData({ aboutIntro });
+  });
+
+  document.getElementById('contact-settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const contact = {
+      phone: document.getElementById('contact-phone').value.trim(),
+      phoneRaw: document.getElementById('contact-phoneRaw').value.trim(),
+      email: document.getElementById('contact-email').value.trim(),
+      whatsapp: document.getElementById('contact-whatsapp').value.trim(),
+      location: document.getElementById('contact-location').value.trim(),
+      mapUrl: document.getElementById('contact-mapUrl').value.trim()
+    };
+    saveSettingsData({ contact });
+  });
+
+  document.getElementById('stats-settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const statsList = [];
+    const labelInputs = document.querySelectorAll('.stat-label-input');
+    const targetInputs = document.querySelectorAll('.stat-target-input');
+    
+    labelInputs.forEach((el, idx) => {
+      const id = el.getAttribute('data-id');
+      const label = el.value.trim();
+      const target = targetInputs[idx].value.trim();
+      statsList.push({ id, label, target });
+    });
+
+    saveSettingsData({ stats: statsList });
+  });
+
+  function saveSettingsData(payload) {
+    fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Save settings failed");
+      return res.json();
+    })
+    .then(() => {
+      showToast("Homepage settings saved successfully!", "success");
+      loadSettings();
+    })
+    .catch(() => showToast("Failed to save settings.", "error"));
+  }
+
+  // ─── EVENTS MANAGING CRUD ─────────────────────────────────
+  function loadEvents() {
+    fetch('/api/public/events')
+      .then(res => res.json())
+      .then(events => {
+        document.getElementById('stat-events-count').textContent = events.length;
+        const tbody = document.getElementById('events-table-body');
+        if (!events || events.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#888;">No events currently scheduled. Click "Add Event" to plan one!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = events.map(e => `
+          <tr>
+            <td style="font-weight:600;color:var(--admin-green-deep);">${e.date}</td>
+            <td><code style="background:#eee;padding:2px 6px;border-radius:4px;font-size:0.8rem;">${e.icon}</code></td>
+            <td style="font-weight:600;">${e.title}</td>
+            <td><i class="fa fa-location-dot" style="margin-right:4px;color:var(--admin-green);"></i>${e.location || 'Surat'}</td>
+            <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-light);">${e.description}</td>
+            <td>
+              <div class="action-btn-group">
+                <button class="action-btn action-edit" onclick='openEventModal(${JSON.stringify(e).replace(/'/g, "&apos;")})' title="Edit"><i class="fa-solid fa-pen"></i></button>
+                <button class="action-btn action-delete" onclick="deleteEvent('${e.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      });
+  }
+
+  function openEventModal(eventObj = null) {
+    const modal = document.getElementById('event-modal');
+    const form = document.getElementById('event-modal-form');
+    const title = document.getElementById('event-modal-title');
+
+    form.reset();
+    document.getElementById('event-id-input').value = '';
+
+    if (eventObj) {
+      title.textContent = "Edit Event Details";
+      document.getElementById('event-id-input').value = eventObj.id;
+      document.getElementById('event-date-input').value = eventObj.date;
+      document.getElementById('event-icon-input').value = eventObj.icon;
+      document.getElementById('event-title-input').value = eventObj.title;
+      document.getElementById('event-location-input').value = eventObj.location || '';
+      document.getElementById('event-desc-input').value = eventObj.description;
+    } else {
+      title.textContent = "Add New Event";
+      document.getElementById('event-icon-input').value = 'fa-calendar';
+    }
+    
+    modal.classList.add('active');
+  }
+
+  function closeEventModal() {
+    document.getElementById('event-modal').classList.remove('active');
+  }
+
+  document.getElementById('event-modal-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('event-id-input').value;
+    const date = document.getElementById('event-date-input').value.trim();
+    const icon = document.getElementById('event-icon-input').value.trim();
+    const title = document.getElementById('event-title-input').value.trim();
+    const location = document.getElementById('event-location-input').value.trim();
+    const description = document.getElementById('event-desc-input').value.trim();
+
+    const payload = { date, icon, title, location, description };
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `/api/admin/events/${id}` : '/api/admin/events';
+
+    fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Save failed");
+      return res.json();
+    })
+    .then(() => {
+      showToast(id ? "Event updated successfully!" : "New event scheduled successfully!", "success");
+      closeEventModal();
+      loadEvents();
+    })
+    .catch(() => showToast("Failed to save event.", "error"));
+  });
+
+  function deleteEvent(id) {
+    if (!confirm("Are you sure you want to delete this event? This action is permanent!")) return;
+    
+    fetch(`/api/admin/events/${id}`, { method: 'DELETE' })
+      .then(res => {
+        if (!res.ok) throw new Error("Delete failed");
+        return res.json();
+      })
+      .then(() => {
+        showToast("Event deleted successfully.", "success");
+        loadEvents();
+      })
+      .catch(() => showToast("Failed to delete event.", "error"));
+  }
+
+  // ─── INTERNSHIP MANAGING ──────────────────────────────────
+  function loadInternships() {
+    fetch('/api/public/internships')
+      .then(res => res.json())
+      .then(internships => {
+        const internship = internships.find(i => i.id === 'internship-1');
+        if (internship) {
+          document.getElementById('internship-title').value = internship.title;
+          document.getElementById('internship-batch').value = internship.batch;
+          document.getElementById('internship-status').value = internship.status;
+          document.getElementById('internship-desc').value = internship.description;
+        }
+      });
+  }
+
+  document.getElementById('internship-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const payload = {
+      id: 'internship-1',
+      title: document.getElementById('internship-title').value.trim(),
+      batch: document.getElementById('internship-batch').value.trim(),
+      status: document.getElementById('internship-status').value,
+      description: document.getElementById('internship-desc').value.trim()
+    };
+
+    fetch('/api/admin/internships', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Save failed");
+      return res.json();
+    })
+    .then(() => {
+      showToast("Internship details and status saved successfully!", "success");
+      loadInternships();
+    })
+    .catch(() => showToast("Failed to save internship schedule.", "error"));
+  });
+
+  // ─── GALLERY IMAGE MANAGING ───────────────────────────────
+  function loadGallery() {
+    fetch('/api/public/gallery')
+      .then(res => res.json())
+      .then(images => {
+        document.getElementById('stat-gallery-count').textContent = images.length;
+        const container = document.getElementById('admin-gallery-container');
+        
+        if (!images || images.length === 0) {
+          container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:#888;">No images inside the library. Choose a file above to upload!</div>`;
+          return;
+        }
+
+        container.innerHTML = images.map(img => `
+          <div class="admin-gallery-card">
+            <img src="../${img}" alt="Gallery Item" loading="lazy">
+            <div class="admin-gallery-card-overlay">
+              <button class="action-btn action-delete" onclick="deleteGalleryImage('${img}')" style="width:40px;height:40px;font-size:1.1rem;" title="Delete Image">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      });
+  }
+
+  function submitGalleryUpload() {
+    const fileInput = document.getElementById('gallery-file-input');
+    const form = document.getElementById('gallery-upload-form');
+    
+    if (fileInput.files.length === 0) return;
+    
+    showToast("Uploading media asset...", "success");
+    const formData = new FormData(form);
+
+    fetch('/api/admin/gallery', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Upload failed");
+      return res.json();
+    })
+    .then(() => {
+      showToast("Image successfully uploaded to library!", "success");
+      fileInput.value = ''; // Reset input
+      loadGallery();
+    })
+    .catch(err => showToast("Upload failed: Standard image formats up to 5MB only.", "error"));
+  }
+
+  function deleteGalleryImage(path) {
+    if (!confirm("Are you sure you want to delete this image? If this image is featured on your homepage or work projects, it will render broken!")) return;
+    
+    fetch('/api/admin/gallery', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagePath: path })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Delete failed");
+      return res.json();
+    })
+    .then(() => {
+      showToast("Image successfully removed from library.", "success");
+      loadGallery();
+    })
+    .catch(() => showToast("Failed to delete image.", "error"));
+  }
+
+  // ─── BLOG ARTICLES MANAGING ───────────────────────────────
+  function loadBlogs() {
+    fetch('/api/public/blogs')
+      .then(res => res.json())
+      .then(blogs => {
+        document.getElementById('stat-blogs-count').textContent = blogs.length;
+        const tbody = document.getElementById('blogs-table-body');
+        
+        if (!blogs || blogs.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#888;">No blog articles published. Click "Write Post" to compose one!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = blogs.map(b => `
+          <tr>
+            <td><img src="../${b.image}" style="width:60px;height:45px;object-fit:cover;border-radius:4px;border:1px solid #eee;"></td>
+            <td style="font-weight:600;color:var(--admin-green-deep);">${b.title}</td>
+            <td><span class="card-date" style="margin:0;font-size:0.7rem;">${b.category}</span></td>
+            <td>${b.date}</td>
+            <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;">${b.summary}</td>
+            <td>
+              <div class="action-btn-group">
+                <button class="action-btn action-edit" onclick='openBlogModal(${JSON.stringify(b).replace(/'/g, "&apos;")})' title="Edit"><i class="fa-solid fa-pen"></i></button>
+                <button class="action-btn action-delete" onclick="deleteBlog('${b.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      });
+  }
+
+  function openBlogModal(blogObj = null) {
+    const modal = document.getElementById('blog-modal');
+    const form = document.getElementById('blog-modal-form');
+    const title = document.getElementById('blog-modal-title');
+
+    form.reset();
+    document.getElementById('blog-id-input').value = '';
+
+    if (blogObj) {
+      title.textContent = "Edit Blog Article";
+      document.getElementById('blog-id-input').value = blogObj.id;
+      document.getElementById('blog-title-input').value = blogObj.title;
+      document.getElementById('blog-category-input').value = blogObj.category;
+      document.getElementById('blog-date-input').value = blogObj.date;
+      document.getElementById('blog-summary-input').value = blogObj.summary;
+      document.getElementById('blog-content-input').value = blogObj.content;
+    } else {
+      title.textContent = "Write New Post";
+      document.getElementById('blog-category-input').value = 'NGO Activities';
+    }
+    
+    modal.classList.add('active');
+  }
+
+  function closeBlogModal() {
+    document.getElementById('blog-modal').classList.remove('active');
+  }
+
+  document.getElementById('blog-modal-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('blog-id-input').value;
+    const form = document.getElementById('blog-modal-form');
+    
+    showToast(id ? "Updating article..." : "Publishing article...", "success");
+    const formData = new FormData(form);
+
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `/api/admin/blogs/${id}` : '/api/admin/blogs';
+
+    // Workaround for PUT requests in fetch with MultiPart form
+    fetch(url, {
+      method: method,
+      body: formData
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Save blog failed");
+      return res.json();
+    })
+    .then(() => {
+      showToast(id ? "Blog article updated successfully!" : "Blog article published successfully!", "success");
+      closeBlogModal();
+      loadBlogs();
+    })
+    .catch(() => showToast("Failed to save blog post. Verify image formats and file size.", "error"));
+  });
+
+  function deleteBlog(id) {
+    if (!confirm("Are you sure you want to delete this blog post? This action is permanent!")) return;
+    
+    fetch(`/api/admin/blogs/${id}`, { method: 'DELETE' })
+      .then(res => {
+        if (!res.ok) throw new Error("Delete failed");
+        return res.json();
+      })
+      .then(() => {
+        showToast("Blog post deleted successfully.", "success");
+        loadBlogs();
+      })
+      .catch(() => showToast("Failed to delete blog post.", "error"));
+  }
+
+  // ─── SECURITY: CHANGE CREDENTIALS HASHED ──────────────────
+  document.getElementById('security-credentials-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const currentPassword = document.getElementById('sec-current-pass').value;
+    const newUsername = document.getElementById('sec-new-user').value.trim();
+    const newPassword = document.getElementById('sec-new-pass').value;
+
+    fetch('/api/admin/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newUsername, newPassword })
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(data => { throw new Error(data.error || 'Password update failed') });
+      }
+      return res.json();
+    })
+    .then(() => {
+      showToast("Credentials updated! Logging out of other sessions.", "success");
+      document.getElementById('security-credentials-form').reset();
+      
+      // Auto logout and re-auth in 1.5 seconds for security
+      setTimeout(() => {
+        logout();
+      }, 1500);
+    })
+    .catch(err => {
+      showToast(err.message, "error");
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog & Stories — Universal Foundation</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Additional custom blog styles that adhere to token design system */
+    .blog-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--earth-stone);
+      transition: var(--transition);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .blog-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-mid);
+      border-color: var(--earth-light);
+    }
+    .blog-img-wrap {
+      width: 100%;
+      aspect-ratio: 16/10;
+      overflow: hidden;
+      position: relative;
+    }
+    .blog-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+      border-radius: 0; /* Override default img border-radius inside card */
+    }
+    .blog-card:hover .blog-img-wrap img {
+      transform: scale(1.05);
+    }
+    .blog-content-wrap {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+    .blog-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .blog-category {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--green-mid);
+      letter-spacing: 0.05em;
+    }
+    .blog-date {
+      font-size: 0.75rem;
+      color: var(--ink-light);
+    }
+    .blog-card h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.25rem;
+      line-height: 1.3;
+      color: var(--green-deep);
+      margin-bottom: 10px;
+    }
+    .blog-card p {
+      color: var(--ink-light);
+      font-size: 0.92rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+    .blogs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 28px;
+      margin-top: 48px;
+    }
+    .no-blogs {
+      text-align: center;
+      padding: 48px;
+      background: var(--earth-sand);
+      border-radius: var(--radius-md);
+      grid-column: 1 / -1;
+      color: var(--ink-light);
+    }
+  </style>
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<header>
+  <a class="logo" href="index.html">
+    <img class="dynamic-logo" src="images/logo.jpeg" alt="Universal Foundation">
+    <span class="dynamic-brand">Universal Foundation</span>
+  </a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="work.html">Our Work</a>
+    <a href="events.html">Internship</a>
+    <a href="blog.html" class="active">Blog</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <button class="mobile-menu-toggle" aria-label="Toggle Navigation">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+</header>
+
+<!-- PAGE HEADER -->
+<div class="page-header" data-aos="fade-up">
+  <div class="section-label">Our Voice</div>
+  <h1>Latest News &amp; Stories</h1>
+  <p>Discover our rescue operations, community events, and social impact initiatives across Gujarat.</p>
+</div>
+
+<!-- BLOGS LIST SECTION -->
+<section class="section">
+  <div class="container">
+    <div class="section-label" data-aos="fade-up">Recent Articles</div>
+    <h2 data-aos="fade-up">From the Field</h2>
+    
+    <div class="blogs-grid" id="blogs-container" data-aos="fade-up">
+      <!-- Dynamic hydration will load blog items here -->
+      <div style="grid-column:1/-1; text-align:center; padding: 40px 0;">
+        <div class="spinner" style="margin: 0 auto; border-top-color: var(--green-mid);"></div>
+        <p style="margin-top: 15px; color: var(--ink-light);">Loading stories...</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand dynamic-brand">Universal Foundation</div>
+  <p>© 2026 <span class="dynamic-brand">Universal Foundation</span> · Surat, Gujarat</p>
+  <p><a href="mailto:hellouniversalfoundation@gmail.com" class="dynamic-email">hellouniversalfoundation@gmail.com</a></p>
+</footer>
+
+<a href="https://wa.me/918347807007" class="wa-float dynamic-wa-link">
+  <i class="fa-brands fa-whatsapp" style="font-size:1.1rem;"></i> WhatsApp
+</a>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 800, once: true, offset: 60 });</script>
+<script src="js/script.js"></script>
+<script>
+  // Page-specific hydration for blog.html
+  window.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/public/blogs')
+      .then(res => res.json())
+      .then(blogs => {
+        const container = document.getElementById('blogs-container');
+        if (!container) return;
+        
+        if (!blogs || blogs.length === 0) {
+          container.innerHTML = `
+            <div class="no-blogs">
+              <i class="fa-regular fa-folder-open" style="font-size: 2rem; margin-bottom: 12px; display: block; color: var(--earth-light);"></i>
+              <h3>No Articles Yet</h3>
+              <p>Check back soon. Our admin staff is writing insightful updates from our upcoming field operations!</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = blogs.map(blog => {
+          return `
+            <div class="blog-card" data-aos="fade-up">
+              <div class="blog-img-wrap">
+                <img src="${blog.image}" alt="${blog.title}" loading="lazy">
+              </div>
+              <div class="blog-content-wrap">
+                <div class="blog-meta">
+                  <span class="blog-category">${blog.category}</span>
+                  <span class="blog-date">• ${blog.date}</span>
+                </div>
+                <h3>${blog.title}</h3>
+                <p>${blog.summary}</p>
+                <a href="blog-post.html?slug=${blog.slug}" class="btn btn-ghost" style="margin-top:auto; font-size:0.85rem; padding:9px 18px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+                  Read Article <i class="fa fa-arrow-right" style="font-size:0.75rem;"></i>
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      })
+      .catch(err => {
+        console.error('Error fetching blogs:', err);
+        const container = document.getElementById('blogs-container');
+        if (container) {
+          container.innerHTML = `
+            <div class="no-blogs" style="background:#fce8e6; color:#a94442; border-color:#ebccd1;">
+              <h3>Failed to Load Blogs</h3>
+              <p>We are having trouble retrieving latest blog articles. Please try reloading the page later.</p>
+            </div>
+          `;
+        }
+      });
+  });
+</script>
+</body>
+</html>

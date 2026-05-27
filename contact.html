@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — Universal Foundation</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div id="loader"><div class="spinner"></div></div>
+
+<header>
+  <a class="logo" href="index.html">
+    <img class="dynamic-logo" src="images/logo.jpeg" alt="Universal Foundation">
+    <span class="dynamic-brand">Universal Foundation</span>
+  </a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="work.html">Our Work</a>
+    <a href="events.html">Internship</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <button class="mobile-menu-toggle" aria-label="Toggle Navigation">
+    <i class="fa-solid fa-bars"></i>
+  </button>
+</header>
+
+<!-- PAGE HEADER -->
+<div class="page-header" data-aos="fade-up">
+  <div class="section-label">We'd Love to Hear From You</div>
+  <h1>Get In Touch</h1>
+  <p>Whether you want to volunteer, apply for the internship, or simply learn more — reach out and we'll respond promptly.</p>
+</div>
+
+<!-- CONTACT SECTION -->
+<section class="section">
+  <div class="container">
+    <div class="contact-grid" data-aos="fade-up">
+
+      <!-- Left: Info -->
+      <div class="contact-info-block">
+        <div>
+          <div class="section-label">Contact Details</div>
+          <h2 style="margin-bottom:32px;">Let's Connect</h2>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+          <div>
+            <h4>Phone</h4>
+            <a href="tel:918347807007">+91 83478 07007</a>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+          <div>
+            <h4>Email</h4>
+            <a href="mailto:hellouniversalfoundation@gmail.com">hellouniversalfoundation@gmail.com</a>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+          <div>
+            <h4>Location</h4>
+            <p>Surat, Gujarat, India</p>
+          </div>
+        </div>
+
+        <div class="contact-item">
+          <div class="contact-icon" style="background:#e7f9ee; color:#25D366;"><i class="fa-brands fa-whatsapp"></i></div>
+          <div>
+            <h4>WhatsApp</h4>
+            <a href="https://wa.me/918347807007" target="_blank">Message us directly</a>
+          </div>
+        </div>
+
+        <!-- Map -->
+        <div class="map-wrap">
+          <iframe
+            src="https://www.google.com/maps?q=Universal+Foundation+Surat&output=embed"
+            height="220"
+            allowfullscreen=""
+            loading="lazy">
+          </iframe>
+        </div>
+      </div>
+
+      <!-- Right: Form -->
+      <div data-aos="fade-left">
+        <div class="form-card">
+          <div class="section-label">Send a Message</div>
+          <h2 style="margin-bottom:28px;">Write to Us</h2>
+          <form action="https://formspree.io/f/xzdwkwpq" method="POST" onsubmit="return validateForm()">
+
+  <div class="form-group">
+    <label>Name</label>
+    <input type="text" id="name" name="name" required>
+  </div>
+
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+
+  <div class="form-group">
+    <label>Message</label>
+    <textarea id="message" name="message" required></textarea>
+  </div>
+
+  <button type="submit" class="btn btn-primary">
+    Send Message
+  </button>
+
+</form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL / FINAL NOTE -->
+<section class="section section--tint" style="text-align:center;" data-aos="fade-up">
+  <div class="container">
+    <div class="section-label" style="justify-content:center;">Gratitude</div>
+    <h2 style="margin-bottom:16px;">Our Deepest Thanks</h2>
+    <p style="text-align:center; margin:0 auto; max-width:580px;">
+      We extend our heartfelt gratitude to all mentors, volunteers, and partner institutions who continuously support our mission. Every contribution — big or small — creates real, lasting change.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand dynamic-brand">Universal Foundation</div>
+  <p>© 2026 <span class="dynamic-brand">Universal Foundation</span> · Surat, Gujarat</p>
+  <p><a href="mailto:hellouniversalfoundation@gmail.com" class="dynamic-email">hellouniversalfoundation@gmail.com</a></p>
+</footer>
+
+<a href="https://wa.me/918347807007" class="wa-float dynamic-wa-link">
+  <i class="fa-brands fa-whatsapp" style="font-size:1.1rem;"></i> WhatsApp
+</a>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 800, once: true, offset: 60 });</script>
+<script src="js/script.js"></script>
+</body>
+</html>
