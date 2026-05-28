@@ -24,6 +24,7 @@
     <a href="events.html">Internship</a>
     <a href="blog.html">Blog</a>
     <a href="contact.html">Contact</a>
+    <a href="donate.html" class="nav-donate" style="color:var(--green-soft); font-weight:700;">Support Us</a>
   </nav>
   <button class="mobile-menu-toggle" aria-label="Toggle Navigation">
     <i class="fa-solid fa-bars"></i>
@@ -106,24 +107,14 @@
   </div>
 </section>
 
-<!-- GALLERY -->
-<section class="section section--tint">
+<!-- IMPACT GALLERY -->
+<section id="impact-gallery" class="section">
   <div class="container">
-    <div class="section-label" data-aos="fade-up">Photo Journal</div>
-    <h2 data-aos="fade-up">Moments from the Field</h2>
-    <div class="gallery" data-aos="fade-up">
-      <div class="gallery-item">
-        <img src="images/events1.jpeg" alt="Volunteers working" loading="lazy">
-      </div>
-      <div class="gallery-item">
-        <img src="images/events2.jpeg" alt="Community activity" loading="lazy">
-      </div>
-      <div class="gallery-item">
-        <img src="images/events3.jpeg" alt="Training session" loading="lazy">
-      </div>
-      <div class="gallery-item">
-        <img src="images/events4.jpeg" alt="Community outreach" loading="lazy">
-      </div>
+    <div class="section-label" data-aos="fade-up">Our Journey</div>
+    <h2 data-aos="fade-up">Impact Gallery</h2>
+    
+    <div id="impact-gallery-container" style="margin-top: 40px;">
+      <!-- JS injected -->
     </div>
   </div>
 </section>
@@ -151,5 +142,10 @@
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>AOS.init({ duration: 800, once: true, offset: 60 });</script>
 <script src="js/script.js"></script>
-</body>
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button id="lightbox-close"><i class="fa-solid fa-xmark"></i></button>
+  <img id="lightbox-img" src="" alt="Preview">
+</div>
+\n\n</body>
 </html>

@@ -640,6 +640,124 @@ app.delete('/api/admin/gallery', requireAdmin, (req, res) => {
   res.json({ success: true, message: 'Image deleted from gallery successfully' });
 });
 
+// ─── DONATION & IMPACT GALLERY ROUTES ───────────────────────
+
+// Get Donation Settings
+app.get('/api/public/donation', (req, res) => {
+  const db = readDb();
+  res.json(db.settings.donation || {});
+});
+
+// Update Donation Settings
+app.post('/api/admin/donation', requireAdmin, upload.single('qrImage'), (req, res) => {
+  const { message, upiId } = req.body;
+  const db = readDb();
+  if (!db.settings.donation) db.settings.donation = {};
+  
+  if (message) db.settings.donation.message = message;
+  if (upiId) db.settings.donation.upiId = upiId;
+  
+  if (req.file) {
+    if (db.settings.donation.qrImage && db.settings.donation.qrImage.startsWith('uploads/')) {
+      const prevPath = path.join(__dirname, db.settings.donation.qrImage);
+      if (fs.existsSync(prevPath)) fs.unlinkSync(prevPath);
+    }
+    db.settings.donation.qrImage = 'uploads/' + req.file.filename;
+  }
+  
+  writeDb(db);
+  res.json({ success: true, message: 'Donation settings updated', donation: db.settings.donation });
+});
+
+// Get Impact Gallery
+app.get('/api/public/impact-gallery', (req, res) => {
+  const db = readDb();
+  res.json(db.impactGallery || []);
+});
+
+// Create/Update Impact Gallery Event
+app.post('/api/admin/impact-gallery', requireAdmin, upload.array('images', 10), (req, res) => {
+  const { id, year, title, description, eventDate } = req.body;
+  if (!year || !title) return res.status(400).json({ error: 'Year and Title are required' });
+  
+  const db = readDb();
+  if (!db.impactGallery) db.impactGallery = [];
+  
+  const imagePaths = req.files ? req.files.map(f => 'uploads/' + f.filename) : [];
+  
+  if (id) {
+    const idx = db.impactGallery.findIndex(i => i.id === id);
+    if (idx !== -1) {
+      db.impactGallery[idx].year = year;
+      db.impactGallery[idx].title = title;
+      db.impactGallery[idx].description = description || '';
+      db.impactGallery[idx].eventDate = eventDate || '';
+      if (imagePaths.length > 0) {
+        db.impactGallery[idx].images = [...db.impactGallery[idx].images, ...imagePaths];
+      }
+      writeDb(db);
+      return res.json({ success: true, message: 'Impact gallery event updated', event: db.impactGallery[idx] });
+    }
+  }
+  
+  const newEvent = {
+    id: 'ig-' + Date.now(),
+    year,
+    title,
+    description: description || '',
+    eventDate: eventDate || '',
+    images: imagePaths
+  };
+  
+  db.impactGallery.push(newEvent);
+  writeDb(db);
+  res.json({ success: true, message: 'Impact gallery event created', event: newEvent });
+});
+
+// Delete Impact Gallery Event
+app.delete('/api/admin/impact-gallery/:id', requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const db = readDb();
+  if (!db.impactGallery) return res.status(404).json({ error: 'Not found' });
+  
+  const idx = db.impactGallery.findIndex(i => i.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  
+  const event = db.impactGallery[idx];
+  event.images.forEach(imgPath => {
+    if (imgPath.startsWith('uploads/')) {
+      const fullPath = path.join(__dirname, imgPath);
+      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+    }
+  });
+  
+  db.impactGallery.splice(idx, 1);
+  writeDb(db);
+  res.json({ success: true, message: 'Impact gallery event deleted' });
+});
+
+// Delete specific image from Impact Gallery Event
+app.delete('/api/admin/impact-gallery/:id/image', requireAdmin, (req, res) => {
+  const id = req.params.id;
+  const { imagePath } = req.body;
+  const db = readDb();
+  
+  const idx = db.impactGallery.findIndex(i => i.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  
+  const imgIdx = db.impactGallery[idx].images.indexOf(imagePath);
+  if (imgIdx !== -1) {
+    db.impactGallery[idx].images.splice(imgIdx, 1);
+    if (imagePath.startsWith('uploads/')) {
+      const fullPath = path.join(__dirname, imagePath);
+      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+    }
+    writeDb(db);
+    return res.json({ success: true, message: 'Image deleted' });
+  }
+  res.status(404).json({ error: 'Image not found in event' });
+});
+
 // ─── SERVE FRONTEND STATIC FILES ────────────────────────────
 // Mount workspace root directory as static content
 app.use(express.static(path.join(__dirname)));
