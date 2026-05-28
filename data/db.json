@@ -66,7 +66,12 @@
         "target": "10",
         "label": "Cities Reached"
       }
-    ]
+    ],
+    "donation": {
+      "message": "Your contribution helps us continue our mission of saving lives and building resilient communities.",
+      "upiId": "universalfoundation@upi",
+      "qrImage": "images/index1.jpeg"
+    }
   },
   "events": [
     {
@@ -162,6 +167,19 @@
       "summary": "Cleaning the Tapi riverbank and training volunteers in flood rescue operations using inflatable boats, lifejackets, and rescue signaling tools.",
       "content": "<p>Water bodies are the lifeblood of our cities, yet they are increasingly threatened by solid waste pollution. In a major community drive led by Universal Foundation, our teams combined Swachh Bharat cleanliness objectives with hands-on flood emergency rescue training on the banks of the Tapi River in Surat.</p><h3>Cleanliness Drive: The Tapi Cleanup</h3><p>Focusing on the Tapi riverbank, volunteers and interns actively removed large amounts of plastic waste, discarded non-biodegradable debris, and solid trash. Mentors gave brief on-site lectures detailing how river pollution severely impacts regional groundwater reservoirs and disrupts riverbed ecosystems. The cleanup drive emphasized waste segregation and correct disposal workflows.</p><h3>Emergency Preparedness: Flood Rescue Operations</h3><p>Surat has faced historical flood challenges, making water rescue training a critical skill. Our trainers led flood simulation drills where interns learned the proper use of life jackets, throwing rescue lines/ropes, operating signaling tools, and boarding inflatable rescue boats. Instructors shared operational rescue experiences and built composure techniques to keep stranded citizens calm during actual floods. This hybrid environmental-emergency event leaves our youth equipped to protect both nature and human lives.</p>",
       "image": "images/events2.jpeg"
+    }
+  ],
+  "impactGallery": [
+    {
+      "id": "ig-1",
+      "year": "2026",
+      "title": "Health Camp & Food Distribution",
+      "description": "Organized health check-ups and distributed ration kits.",
+      "eventDate": "15 May 2026",
+      "images": [
+        "images/index1of3.jpeg",
+        "images/index2of3.jpeg"
+      ]
     }
   ]
 }

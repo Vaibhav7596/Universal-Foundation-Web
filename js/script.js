@@ -369,3 +369,107 @@ function showToast(msg, type = "success") {
       }).catch(err => console.error("Error loading internship schedules:", err));
   }
 })();
+
+
+// ─── DONATION HYDRATION & COPY UPI ──────────────────────────
+if (document.getElementById('donation')) {
+  fetch('/api/public/donation')
+    .then(res => res.json())
+    .then(data => {
+      const msgEl = document.getElementById('donation-msg-display');
+      const qrEl = document.getElementById('donation-qr-display');
+      const copyBtn = document.getElementById('copy-upi-btn');
+      
+      if (msgEl && data.message) msgEl.textContent = data.message;
+      if (qrEl && data.qrImage) qrEl.src = data.qrImage;
+      if (copyBtn && data.upiId) copyBtn.setAttribute('data-upi', data.upiId);
+    })
+    .catch(err => console.error("Donation fetch error:", err));
+
+  const copyBtn = document.getElementById('copy-upi-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const upi = copyBtn.getAttribute('data-upi');
+      if (upi && navigator.clipboard) {
+        navigator.clipboard.writeText(upi).then(() => {
+          showToast('UPI ID copied to clipboard!', 'success');
+        });
+      }
+    });
+  }
+}
+
+// ─── IMPACT GALLERY HYDRATION ───────────────────────────────
+const impactContainer = document.getElementById('impact-gallery-container');
+if (impactContainer) {
+  fetch('/api/public/impact-gallery')
+    .then(res => res.json())
+    .then(data => {
+      if (!data || data.length === 0) return;
+      
+      // Group by year
+      const grouped = data.reduce((acc, item) => {
+        const y = item.year;
+        if (!acc[y]) acc[y] = [];
+        acc[y].push(item);
+        return acc;
+      }, {});
+      
+      // Sort years descending
+      const sortedYears = Object.keys(grouped).sort((a,b) => b - a);
+      
+      impactContainer.innerHTML = sortedYears.map(year => {
+        const events = grouped[year];
+        return `
+          <div class="impact-year-group" data-aos="fade-up">
+            <h3 class="year-heading">${year}</h3>
+            <div class="grid">
+              ${events.map((ev, i) => `
+                <div class="card impact-card" data-aos="fade-up" data-aos-delay="${i*100}">
+                  <h4>${ev.title}</h4>
+                  <p>${ev.description}</p>
+                  ${ev.eventDate ? `<p style="font-size:0.8rem; color:var(--earth-warm); margin-top:8px;">${ev.eventDate}</p>` : ''}
+                  
+                  ${ev.images && ev.images.length > 0 ? `
+                    <div class="impact-images-grid">
+                      ${ev.images.map(img => `<img src="${img}" class="lightbox-trigger" loading="lazy">`).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      setupLightbox();
+    })
+    .catch(err => console.error("Impact gallery fetch error:", err));
+}
+
+// ─── LIGHTBOX FUNCTIONALITY ─────────────────────────────────
+function setupLightbox() {
+  const triggers = document.querySelectorAll('.lightbox-trigger');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const closeBtn = document.getElementById('lightbox-close');
+  
+  if (!lightbox) return;
+
+  triggers.forEach(img => {
+    img.addEventListener('click', () => {
+      lightboxImg.src = img.src;
+      lightbox.classList.add('active');
+    });
+  });
+
+  const closeLightbox = () => lightbox.classList.remove('active');
+  
+  if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
+  });
+}

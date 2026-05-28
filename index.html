@@ -144,6 +144,19 @@
   </div>
 </section>
 
+
+<!-- IMPACT GALLERY -->
+<section id="impact-gallery" class="section">
+  <div class="container">
+    <div class="section-label" data-aos="fade-up">Our Journey</div>
+    <h2 data-aos="fade-up">Impact Gallery</h2>
+    
+    <div id="impact-gallery-container" style="margin-top: 40px;">
+      <!-- JS injected -->
+    </div>
+  </div>
+</section>
+
 <!-- WHY US -->
 <section class="section section--tint">
   <div class="container">
@@ -164,6 +177,31 @@
         <div class="card-icon"><i class="fa-solid fa-people-group"></i></div>
         <h3>Volunteer Network</h3>
         <p>A strong team of passionate volunteers who show up consistently and make every program possible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- DONATION -->
+<section id="donation" class="section section--tint">
+  <div class="container">
+    <div class="two-col" style="align-items: center;">
+      <div data-aos="fade-up">
+        <div class="section-label">Support Our Mission</div>
+        <h2 style="margin-bottom:14px;">Make a Difference</h2>
+        <p id="donation-msg-display" style="margin-bottom:24px;">Your contribution helps us continue our mission of saving lives and building resilient communities.</p>
+        <div class="donation-actions" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="btn btn-outline" style="color:var(--green-deep); border-color:var(--green-deep);" id="copy-upi-btn" data-upi="universalfoundation@upi">
+            <i class="fa-solid fa-copy"></i> Copy UPI ID
+          </button>
+        </div>
+      </div>
+      <div data-aos="fade-up" data-aos-delay="100" style="display:flex; justify-content:center;">
+        <div class="donation-qr-card">
+          <img id="donation-qr-display" src="images/index1.jpeg" alt="Scan to Donate">
+          <p>Scan with Google Pay or any UPI app</p>
+        </div>
       </div>
     </div>
   </div>
@@ -192,5 +230,11 @@
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>AOS.init({ duration: 800, once: true, offset: 60 });</script>
 <script src="js/script.js"></script>
-</body>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <button id="lightbox-close"><i class="fa-solid fa-xmark"></i></button>
+  <img id="lightbox-img" src="" alt="Preview">
+</div>
+\n</body>
 </html>

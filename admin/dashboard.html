@@ -537,6 +537,13 @@
     <button class="menu-item" data-target="gallery">
       <i class="fa-solid fa-images"></i> Gallery Manager
     </button>
+    
+    <button class="menu-item" data-target="donation">
+      <i class="fa-solid fa-hand-holding-dollar"></i> Donation Settings
+    </button>
+    <button class="menu-item" data-target="impact-gallery">
+      <i class="fa-solid fa-timeline"></i> Impact Gallery
+    </button>
     <button class="menu-item" data-target="blogs">
       <i class="fa-solid fa-newspaper"></i> Blog Manager
     </button>
@@ -758,6 +765,63 @@
       </div>
     </div>
 
+    
+    <!-- ─── TAB: DONATION ──────────────────────────────── -->
+    <div class="tab-content" id="donation">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Donation Settings</h2>
+        </div>
+        <form id="donation-settings-form" enctype="multipart/form-data">
+          <div class="form-group">
+            <label>Donation Message</label>
+            <textarea id="donation-message" style="min-height: 90px;" required></textarea>
+          </div>
+          <div class="admin-form-row">
+            <div class="form-group">
+              <label>UPI ID</label>
+              <input type="text" id="donation-upi" required>
+            </div>
+            <div class="form-group">
+              <label>Current QR Code</label>
+              <img id="donation-qr-preview" src="" style="max-height:100px; display:block; margin-top:8px; border-radius:4px; border:1px solid var(--border-color);">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Upload New QR Code (Optional)</label>
+            <input type="file" id="donation-qr-upload" name="qrImage" accept="image/*">
+          </div>
+          <button type="submit" class="btn btn-primary btn-save">Save Donation Settings</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ─── TAB: IMPACT GALLERY ───────────────────────── -->
+    <div class="tab-content" id="impact-gallery">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Manage Impact Gallery</h2>
+          <button type="button" class="btn btn-primary" onclick="openImpactModal()" style="font-size:0.85rem; padding:8px 16px;"><i class="fa fa-plus"></i> Add Event</button>
+        </div>
+        
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Title</th>
+                <th>Event Date</th>
+                <th>Images</th>
+                <th style="width: 100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="impact-table-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- ─── TAB: BLOGS ─────────────────────────────────── -->
     <div class="tab-content" id="blogs">
       <div class="admin-card">
@@ -951,6 +1015,50 @@
       <div class="admin-modal-footer">
         <button type="button" class="btn btn-cancel" onclick="closeBlogModal()">Cancel</button>
         <button type="submit" class="btn btn-primary btn-save">Publish Article</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- IMPACT GALLERY MODAL -->
+<div class="admin-modal" id="impact-modal">
+  <div class="admin-modal-card">
+    <div class="admin-modal-header">
+      <h3 id="impact-modal-title">Add Impact Event</h3>
+      <button type="button" class="admin-modal-close" onclick="closeImpactModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="impact-modal-form" enctype="multipart/form-data">
+      <div class="admin-modal-body">
+        <input type="hidden" id="impact-id-input" name="id">
+        <div class="admin-form-row">
+          <div class="form-group">
+            <label>Year (e.g. 2026)</label>
+            <input type="text" id="impact-year-input" name="year" required>
+          </div>
+          <div class="form-group">
+            <label>Event Date (e.g. 15 May 2026)</label>
+            <input type="text" id="impact-date-input" name="eventDate">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="impact-title-input" name="title" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="impact-desc-input" name="description" style="min-height: 80px;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Add Images (Multiple allowed)</label>
+          <input type="file" id="impact-images-input" name="images" accept="image/*" multiple>
+        </div>
+        <div id="impact-existing-images" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn btn-cancel" onclick="closeImpactModal()">Cancel</button>
+        <button type="submit" class="btn btn-save">Save Event</button>
       </div>
     </form>
   </div>
