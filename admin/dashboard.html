@@ -1622,6 +1622,135 @@
       showToast(err.message, "error");
     });
   });
+
+  // ─── DONATION SETTINGS ──────────────────────────────────────
+  function loadDonationSettings() {
+    fetch('/api/public/donation').then(res => res.json()).then(data => {
+      const msg = document.getElementById('donation-message');
+      const upi = document.getElementById('donation-upi');
+      const qr = document.getElementById('donation-qr-preview');
+      if(msg) msg.value = data.message || '';
+      if(upi) upi.value = data.upiId || '';
+      if(qr) qr.src = '../' + (data.qrImage || 'images/logo.jpeg');
+    });
+  }
+  
+  const donationForm = document.getElementById('donation-settings-form');
+  if (donationForm) {
+    donationForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('message', document.getElementById('donation-message').value);
+      formData.append('upiId', document.getElementById('donation-upi').value);
+      const file = document.getElementById('donation-qr-upload').files[0];
+      if (file) formData.append('qrImage', file);
+      
+      fetch('/api/admin/donation', { method: 'POST', body: formData })
+        .then(res => res.json()).then(() => {
+          showToast('Donation settings updated successfully', 'success');
+          loadDonationSettings();
+        });
+    });
+  }
+
+  // ─── IMPACT GALLERY ─────────────────────────────────────────
+  function loadImpactGallery() {
+    fetch('/api/public/impact-gallery').then(res => res.json()).then(data => {
+      const tbody = document.getElementById('impact-table-body');
+      if (tbody) {
+        tbody.innerHTML = data.map(item => `
+          <tr>
+            <td>${item.year}</td>
+            <td style="font-weight:600;">${item.title}</td>
+            <td>${item.eventDate || '-'}</td>
+            <td>${(item.images || []).length} images</td>
+            <td>
+              <div class="action-btn-group">
+                <button type="button" class="action-btn action-edit" onclick='openImpactModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' title="Edit"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="action-btn action-delete" onclick="deleteImpactEvent('${item.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+    });
+  }
+
+  function openImpactModal(item = null) {
+    const form = document.getElementById('impact-modal-form');
+    if(form) form.reset();
+    document.getElementById('impact-id-input').value = '';
+    document.getElementById('impact-existing-images').innerHTML = '';
+    document.getElementById('impact-modal-title').textContent = item ? "Edit Impact Event" : "Add Impact Event";
+    
+    if (item) {
+      document.getElementById('impact-id-input').value = item.id;
+      document.getElementById('impact-year-input').value = item.year;
+      document.getElementById('impact-date-input').value = item.eventDate || '';
+      document.getElementById('impact-title-input').value = item.title;
+      document.getElementById('impact-desc-input').value = item.description || '';
+      
+      const existing = document.getElementById('impact-existing-images');
+      if (item.images && item.images.length > 0) {
+        existing.innerHTML = item.images.map(img => `
+          <div style="position:relative; width:80px; height:80px;">
+            <img src="../${img}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;">
+            <button type="button" onclick="deleteImpactImage('${item.id}', '${img}')" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">&times;</button>
+          </div>
+        `).join('');
+      }
+    }
+    document.getElementById('impact-modal').classList.add('active');
+  }
+
+  function closeImpactModal() {
+    document.getElementById('impact-modal').classList.remove('active');
+  }
+
+  const impactForm = document.getElementById('impact-modal-form');
+  if (impactForm) {
+    impactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      fetch('/api/admin/impact-gallery', { method: 'POST', body: new FormData(impactForm) })
+        .then(res => res.json()).then(() => {
+          showToast('Impact event saved', 'success');
+          closeImpactModal();
+          loadImpactGallery();
+        });
+    });
+  }
+
+  function deleteImpactEvent(id) {
+    if(!confirm("Delete this event completely?")) return;
+    fetch('/api/admin/impact-gallery/'+id, { method: 'DELETE' })
+      .then(() => { showToast('Event deleted', 'success'); loadImpactGallery(); });
+  }
+
+  function deleteImpactImage(id, imagePath) {
+    if(!confirm("Delete this image?")) return;
+    fetch('/api/admin/impact-gallery/'+id+'/image', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagePath })
+    }).then(() => {
+      showToast('Image deleted', 'success');
+      closeImpactModal();
+      loadImpactGallery();
+    });
+  }
+
+  // Hook into initializeDashboard
+  if (typeof initializeDashboard === 'function') {
+    const origInit = initializeDashboard;
+    initializeDashboard = function() {
+      origInit();
+      loadDonationSettings();
+      loadImpactGallery();
+    };
+  } else {
+    loadDonationSettings();
+    loadImpactGallery();
+  }
 </script>
 </body>
 </html>
