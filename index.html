@@ -127,19 +127,29 @@
 </section>
 
 <!-- GALLERY -->
-<section class="section">
+<section class="section" style="overflow: hidden;">
   <div class="container">
     <div class="section-label" data-aos="fade-up">In Action</div>
     <h2 data-aos="fade-up">Recent Activities</h2>
-    <div class="gallery" data-aos="fade-up">
-      <div class="gallery-item">
-        <img src="images/index1of3.jpeg" alt="Training session" loading="lazy">
+    <div class="gallery-carousel-wrapper" data-aos="fade-up">
+      <div class="gallery">
+        <div class="gallery-item">
+          <img src="images/index1of3.jpeg" alt="Training session" loading="lazy">
+        </div>
+        <div class="gallery-item">
+          <img src="images/index2of3.jpeg" alt="Volunteer activity" loading="lazy">
+        </div>
+        <div class="gallery-item">
+          <img src="images/index3of3.jpeg" alt="Cleanliness Drive" loading="lazy">
+        </div>
       </div>
-      <div class="gallery-item">
-        <img src="images/index2of3.jpeg" alt="Volunteer activity" loading="lazy">
-      </div>
-      <div class="gallery-item">
-        <img src="images/index3of3.jpeg" alt="Cleanliness Drive" loading="lazy">
+    </div>
+    <!-- Carousel Controls -->
+    <div class="carousel-controls" data-aos="fade-up" data-aos-delay="100">
+      <div class="carousel-counter" id="carousel-counter">Image 1 of 3</div>
+      <div class="carousel-dots" id="carousel-dots"></div>
+      <div class="carousel-progress">
+        <div class="carousel-progress-bar" id="carousel-progress-bar"></div>
       </div>
     </div>
   </div>

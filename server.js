@@ -600,12 +600,19 @@ app.delete('/api/admin/blogs/:id', requireAdmin, (req, res) => {
 
 // Upload Gallery Image
 app.post('/api/admin/gallery', requireAdmin, upload.single('galleryImage'), (req, res) => {
+  const db = readDb();
+  if (db.gallery && db.gallery.length >= 9) {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    return res.status(400).json({ error: 'Maximum 9 images allowed. Please delete an existing image before uploading a new one.' });
+  }
+
   if (!req.file) {
     return res.status(400).json({ error: 'No image file uploaded' });
   }
 
   const imagePath = 'uploads/' + req.file.filename;
-  const db = readDb();
   
   db.gallery.push(imagePath);
   writeDb(db);

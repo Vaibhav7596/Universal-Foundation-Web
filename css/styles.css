@@ -84,12 +84,16 @@ header {
   align-items: center;
   z-index: 1000;
   border-bottom: 1px solid transparent;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 header.scrolled {
   border-bottom-color: var(--earth-stone);
   box-shadow: 0 2px 20px rgba(26,58,42,0.07);
+}
+
+header.header--hidden {
+  transform: translateY(-100%);
 }
 
 .logo {
@@ -487,6 +491,115 @@ nav a.active {
 }
 
 .gallery-item:hover::after { opacity: 1; }
+
+/* ─── HOME GALLERY CAROUSEL ──────────────────────── */
+.gallery-carousel-wrapper {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  margin-top: 48px;
+  cursor: grab;
+  padding: 8px 0; /* allows box shadow room on hover translation */
+}
+.gallery-carousel-wrapper:active {
+  cursor: grabbing;
+}
+.gallery-carousel-wrapper .gallery {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  grid-template-columns: none !important;
+  gap: 16px !important;
+  margin-top: 0 !important;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  width: 100%;
+}
+.gallery-carousel-wrapper .gallery-item {
+  flex: 0 0 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.gallery-carousel-wrapper .gallery-item:hover {
+  box-shadow: 0 12px 28px rgba(26,58,42,0.15);
+  transform: translateY(-4px);
+}
+
+@media (min-width: 768px) {
+  .gallery-carousel-wrapper .gallery-item {
+    flex: 0 0 calc(50% - 8px);
+    max-width: calc(50% - 8px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .gallery-carousel-wrapper .gallery-item {
+    flex: 0 0 calc(33.333333% - 10.666667px);
+    max-width: calc(33.333333% - 10.666667px);
+  }
+}
+
+/* ─── CAROUSEL CONTROLS ──────────────────────────── */
+.carousel-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.carousel-counter {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--green-deep);
+  background: var(--green-pale);
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(26,58,42,0.05);
+}
+
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(26,58,42,0.15);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carousel-dot.active {
+  background: var(--green-mid);
+  width: 22px;
+  border-radius: 4px;
+}
+
+.carousel-progress {
+  width: 140px;
+  height: 3px;
+  background: rgba(26,58,42,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 4px;
+}
+
+.carousel-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--green-mid);
+  border-radius: 2px;
+  transition: width 0.05s linear;
+}
 
 /* ─── ABOUT TWO-COL ──────────────────────────────── */
 .two-col {

@@ -12,11 +12,30 @@ window.addEventListener("load", () => {
   }
 });
 
-/* ── HEADER SCROLL ───────────────────────────────── */
+/* ── SMART STICKY HEADER ─────────────────────────── */
+let lastScrollY = window.scrollY;
+const header = document.querySelector("header");
+
 window.addEventListener("scroll", () => {
-  document
-    .querySelector("header")
-    ?.classList.toggle("scrolled", window.scrollY > 40);
+  const currentScrollY = window.scrollY;
+  
+  // Toggle scroll styling class
+  header?.classList.toggle("scrolled", currentScrollY > 40);
+
+  // Hide/Show smart sticky header based on direction
+  if (currentScrollY > lastScrollY && currentScrollY > 100) {
+    // Scrolling down -> hide header (only if mobile navigation drawer is not active)
+    const nav = document.querySelector("nav");
+    const isNavOpen = nav?.classList.contains("active");
+    if (!isNavOpen) {
+      header?.classList.add("header--hidden");
+    }
+  } else if (currentScrollY < lastScrollY) {
+    // Scrolling up -> show header
+    header?.classList.remove("header--hidden");
+  }
+
+  lastScrollY = currentScrollY;
 });
 
 /* ── ACTIVE NAV LINK ─────────────────────────────── */
@@ -220,17 +239,23 @@ function showToast(msg, type = "success") {
           });
         }
         
-        // Dynamic Home Gallery (Render top 3 from gallery database)
+        // Dynamic Home Gallery (Render all from gallery database as carousel)
         fetch('/api/public/gallery')
           .then(res => res.json())
           .then(galleryImages => {
-            const galleryContainer = document.querySelector(".gallery");
-            if (galleryContainer && galleryImages && galleryImages.length >= 3) {
-              galleryContainer.innerHTML = galleryImages.slice(0, 3).map(img => `
+            const galleryContainer = document.querySelector(".gallery-carousel-wrapper .gallery");
+            if (galleryContainer && galleryImages && galleryImages.length > 0) {
+              galleryContainer.innerHTML = galleryImages.map(img => `
                 <div class="gallery-item">
                   <img src="${img}" alt="Activity" loading="lazy">
                 </div>
               `).join('');
+
+              // Initialize Carousel
+              const wrapper = document.querySelector(".gallery-carousel-wrapper");
+              if (wrapper) {
+                new HomeCarousel(wrapper);
+              }
             }
           }).catch(err => console.error("Error loading home gallery:", err));
       }
@@ -472,4 +497,279 @@ function setupLightbox() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
   });
+}
+
+// ─── HOME CAROUSEL CLASS FOR RECENT ACTIVITIES ───────────────
+class HomeCarousel {
+  constructor(container, options = {}) {
+    this.container = container;
+    this.track = container.querySelector('.gallery');
+    this.items = [];
+    this.intervalTime = options.interval || 4000;
+    this.currentIndex = 0;
+    this.timer = null;
+    this.startX = 0;
+    this.currentTranslate = 0;
+    this.prevTranslate = 0;
+    this.isDragging = false;
+    this.gap = 16; // 16px css gap
+    
+    // Progress Bar trackers
+    this.progressTime = 0;
+    this.progressStep = 30; // update progress every 30ms
+
+    this.init();
+  }
+
+  getVisibleItemsCount() {
+    if (window.innerWidth >= 1024) return 3;
+    if (window.innerWidth >= 768) return 2;
+    return 1;
+  }
+
+  getMaxIndex() {
+    const visible = this.getVisibleItemsCount();
+    return Math.max(0, this.items.length - visible);
+  }
+
+  init() {
+    this.items = Array.from(this.track.children);
+    if (this.items.length === 0) return;
+
+    // Render indicators
+    this.renderDots();
+    this.updateControls();
+
+    // Start auto play
+    this.startAutoPlay();
+
+    // Resize event
+    window.addEventListener('resize', () => {
+      this.renderDots();
+      this.slideTo(this.currentIndex, false);
+    });
+
+    // Hover listeners
+    this.container.addEventListener('mouseenter', () => this.stopAutoPlay());
+    this.container.addEventListener('mouseleave', () => this.startAutoPlay());
+
+    // Swipe support
+    this.track.addEventListener('touchstart', (e) => this.touchStart(e), { passive: true });
+    this.track.addEventListener('touchmove', (e) => this.touchMove(e), { passive: false });
+    this.track.addEventListener('touchend', () => this.touchEnd());
+
+    // Mouse drag support
+    this.track.addEventListener('mousedown', (e) => this.dragStart(e));
+    this.track.addEventListener('mousemove', (e) => this.dragMove(e));
+    this.track.addEventListener('mouseup', () => this.dragEnd());
+    this.track.addEventListener('mouseleave', () => {
+      if (this.isDragging) this.dragEnd();
+    });
+  }
+
+  renderDots() {
+    const dotsContainer = document.getElementById('carousel-dots');
+    if (!dotsContainer) return;
+
+    // We only need dots for the possible sliding positions: maxIndex + 1
+    const totalDots = this.getMaxIndex() + 1;
+    let dotsHtml = '';
+    for (let i = 0; i < totalDots; i++) {
+      dotsHtml += `<div class="carousel-dot ${i === this.currentIndex ? 'active' : ''}" data-index="${i}"></div>`;
+    }
+    dotsContainer.innerHTML = dotsHtml;
+
+    // Add click event to dots
+    dotsContainer.querySelectorAll('.carousel-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        const idx = parseInt(dot.getAttribute('data-index'), 10);
+        this.slideTo(idx);
+      });
+    });
+  }
+
+  updateControls() {
+    // 1. Update text counter (Image X of Y)
+    const counterEl = document.getElementById('carousel-counter');
+    if (counterEl) {
+      counterEl.textContent = `Image ${this.currentIndex + 1} of ${this.items.length}`;
+    }
+
+    // 2. Update active dot class
+    const dots = document.querySelectorAll('.carousel-dot');
+    dots.forEach((dot, idx) => {
+      if (idx === this.currentIndex) {
+        dot.classList.add('active');
+      } else {
+        dot.classList.remove('active');
+      }
+    });
+  }
+
+  slideTo(index, animate = true) {
+    const max = this.getMaxIndex();
+    if (index < 0) index = 0;
+    if (index > max) index = max;
+
+    this.currentIndex = index;
+    const firstItem = this.items[0];
+    if (!firstItem) return;
+    const itemWidth = firstItem.getBoundingClientRect().width;
+    const translate = -index * (itemWidth + this.gap);
+
+    if (animate) {
+      this.track.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+    } else {
+      this.track.style.transition = 'none';
+    }
+
+    this.track.style.transform = `translateX(${translate}px)`;
+    this.prevTranslate = translate;
+
+    // Reset progress tracker on manual/auto slides
+    this.progressTime = 0;
+    const progressBar = document.getElementById('carousel-progress-bar');
+    if (progressBar) {
+      progressBar.style.width = '0%';
+    }
+
+    this.updateControls();
+  }
+
+  next() {
+    const max = this.getMaxIndex();
+    if (this.currentIndex >= max) {
+      // Loop continuously back to first slide
+      this.slideTo(0);
+    } else {
+      this.slideTo(this.currentIndex + 1);
+    }
+  }
+
+  prev() {
+    if (this.currentIndex <= 0) {
+      this.slideTo(this.getMaxIndex());
+    } else {
+      this.slideTo(this.currentIndex - 1);
+    }
+  }
+
+  startAutoPlay() {
+    this.stopAutoPlay();
+    const visible = this.getVisibleItemsCount();
+    if (this.items.length <= visible) return;
+
+    this.timer = setInterval(() => {
+      if (this.isDragging) return;
+
+      this.progressTime += this.progressStep;
+      const percent = Math.min(100, (this.progressTime / this.intervalTime) * 100);
+      
+      const progressBar = document.getElementById('carousel-progress-bar');
+      if (progressBar) {
+        progressBar.style.width = percent + '%';
+      }
+
+      if (this.progressTime >= this.intervalTime) {
+        this.progressTime = 0;
+        this.next();
+      }
+    }, this.progressStep);
+  }
+
+  stopAutoPlay() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  touchStart(e) {
+    this.stopAutoPlay();
+    this.startX = e.touches[0].clientX;
+    this.isDragging = true;
+    this.track.style.transition = 'none';
+  }
+
+  touchMove(e) {
+    if (!this.isDragging) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - this.startX;
+
+    if (Math.abs(diff) > 5) {
+      if (e.cancelable) e.preventDefault();
+    }
+
+    const firstItem = this.items[0];
+    if (!firstItem) return;
+    const itemWidth = firstItem.getBoundingClientRect().width;
+    const baseTranslate = -this.currentIndex * (itemWidth + this.gap);
+    this.currentTranslate = baseTranslate + diff;
+
+    this.track.style.transform = `translateX(${this.currentTranslate}px)`;
+  }
+
+  touchEnd() {
+    if (!this.isDragging) return;
+    this.isDragging = false;
+
+    const firstItem = this.items[0];
+    if (!firstItem) return;
+    const itemWidth = firstItem.getBoundingClientRect().width;
+    const movedBy = this.currentTranslate - (-this.currentIndex * (itemWidth + this.gap));
+
+    const threshold = itemWidth * 0.2;
+    if (movedBy < -threshold) {
+      this.slideTo(this.currentIndex + 1);
+    } else if (movedBy > threshold) {
+      this.slideTo(this.currentIndex - 1);
+    } else {
+      this.slideTo(this.currentIndex);
+    }
+
+    this.startAutoPlay();
+  }
+
+  dragStart(e) {
+    e.preventDefault();
+    this.stopAutoPlay();
+    this.startX = e.clientX;
+    this.isDragging = true;
+    this.track.style.transition = 'none';
+  }
+
+  dragMove(e) {
+    if (!this.isDragging) return;
+    const currentX = e.clientX;
+    const diff = currentX - this.startX;
+
+    const firstItem = this.items[0];
+    if (!firstItem) return;
+    const itemWidth = firstItem.getBoundingClientRect().width;
+    const baseTranslate = -this.currentIndex * (itemWidth + this.gap);
+    this.currentTranslate = baseTranslate + diff;
+
+    this.track.style.transform = `translateX(${this.currentTranslate}px)`;
+  }
+
+  dragEnd() {
+    if (!this.isDragging) return;
+    this.isDragging = false;
+
+    const firstItem = this.items[0];
+    if (!firstItem) return;
+    const itemWidth = firstItem.getBoundingClientRect().width;
+    const movedBy = this.currentTranslate - (-this.currentIndex * (itemWidth + this.gap));
+
+    const threshold = itemWidth * 0.2;
+    if (movedBy < -threshold) {
+      this.slideTo(this.currentIndex + 1);
+    } else if (movedBy > threshold) {
+      this.slideTo(this.currentIndex - 1);
+    } else {
+      this.slideTo(this.currentIndex);
+    }
+
+    this.startAutoPlay();
+  }
 }

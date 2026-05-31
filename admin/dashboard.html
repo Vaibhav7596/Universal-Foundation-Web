@@ -1420,10 +1420,12 @@
   });
 
   // ─── GALLERY IMAGE MANAGING ───────────────────────────────
+  let currentGalleryCount = 0;
   function loadGallery() {
     fetch('/api/public/gallery')
       .then(res => res.json())
       .then(images => {
+        currentGalleryCount = images.length;
         document.getElementById('stat-gallery-count').textContent = images.length;
         const container = document.getElementById('admin-gallery-container');
         
@@ -1450,6 +1452,12 @@
     const form = document.getElementById('gallery-upload-form');
     
     if (fileInput.files.length === 0) return;
+
+    if (currentGalleryCount >= 9) {
+      showToast("Maximum 9 images allowed. Please delete an existing image before uploading a new one.", "error");
+      fileInput.value = '';
+      return;
+    }
     
     showToast("Uploading media asset...", "success");
     const formData = new FormData(form);
@@ -1459,7 +1467,11 @@
       body: formData
     })
     .then(res => {
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        return res.json().then(errData => {
+          throw new Error(errData.error || "Upload failed");
+        });
+      }
       return res.json();
     })
     .then(() => {
@@ -1467,7 +1479,7 @@
       fileInput.value = ''; // Reset input
       loadGallery();
     })
-    .catch(err => showToast("Upload failed: Standard image formats up to 5MB only.", "error"));
+    .catch(err => showToast(err.message || "Upload failed: Standard image formats up to 5MB only.", "error"));
   }
 
   function deleteGalleryImage(path) {
