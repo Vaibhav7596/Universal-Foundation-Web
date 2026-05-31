@@ -765,6 +765,52 @@ app.delete('/api/admin/impact-gallery/:id/image', requireAdmin, (req, res) => {
   res.status(404).json({ error: 'Image not found in event' });
 });
 
+// ─── SEO: SITEMAP & ROBOTS ───────────────────────────────────
+
+// Serve sitemap.xml with correct content-type
+app.get('/sitemap.xml', (req, res) => {
+  const baseUrl = 'https://www.universalfoundationindia.com';
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+  const pages = [
+    { url: '/',           changefreq: 'weekly',  priority: '1.0' },
+    { url: '/about.html', changefreq: 'monthly', priority: '0.8' },
+    { url: '/events.html',  changefreq: 'weekly',  priority: '0.9' },
+    { url: '/work.html',  changefreq: 'monthly', priority: '0.7' },
+    { url: '/blog.html',  changefreq: 'weekly',  priority: '0.8' },
+    { url: '/donate.html',changefreq: 'monthly', priority: '0.8' },
+    { url: '/contact.html',changefreq: 'monthly', priority: '0.7' },
+  ];
+
+  const urlEntries = pages.map(page => `
+  <url>
+    <loc>${baseUrl}${page.url}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`).join('');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urlEntries}
+</urlset>`;
+
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.send(xml);
+});
+
+// Serve robots.txt
+app.get('/robots.txt', (req, res) => {
+  const content = `User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://www.universalfoundationindia.com/sitemap.xml`;
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send(content);
+});
+
 // ─── SERVE FRONTEND STATIC FILES ────────────────────────────
 // Mount workspace root directory as static content
 app.use(express.static(path.join(__dirname)));
