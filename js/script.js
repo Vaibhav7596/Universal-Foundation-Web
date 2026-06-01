@@ -12,31 +12,9 @@ window.addEventListener("load", () => {
   }
 });
 
-/* ── SMART STICKY HEADER ─────────────────────────── */
-let lastScrollY = window.scrollY;
-const header = document.querySelector("header");
+/* ── FIXED TOP HEADER ────────────────────────────── */
+// Header is styled fixed-top in CSS and remains statically locked.
 
-window.addEventListener("scroll", () => {
-  const currentScrollY = window.scrollY;
-  
-  // Toggle scroll styling class
-  header?.classList.toggle("scrolled", currentScrollY > 40);
-
-  // Hide/Show smart sticky header based on direction
-  if (currentScrollY > lastScrollY && currentScrollY > 100) {
-    // Scrolling down -> hide header (only if mobile navigation drawer is not active)
-    const nav = document.querySelector("nav");
-    const isNavOpen = nav?.classList.contains("active");
-    if (!isNavOpen) {
-      header?.classList.add("header--hidden");
-    }
-  } else if (currentScrollY < lastScrollY) {
-    // Scrolling up -> show header
-    header?.classList.remove("header--hidden");
-  }
-
-  lastScrollY = currentScrollY;
-});
 
 /* ── ACTIVE NAV LINK ─────────────────────────────── */
 (function setActiveNav() {

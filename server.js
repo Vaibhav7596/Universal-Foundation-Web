@@ -352,17 +352,39 @@ app.get('/api/public/internships', (req, res) => {
   res.json(db.internships);
 });
 
-// Get Blogs list (Sorted by Date Descending)
+// Get Blogs list (Sorted by Date Descending, Newest First)
 app.get('/api/public/blogs', (req, res) => {
   const db = readDb();
-  res.json(db.blogs);
+  
+  const parseDate = (dStr) => {
+    const d = new Date(dStr);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+
+  const getTimestampFromId = (id) => {
+    if (typeof id === 'string' && id.startsWith('blog-')) {
+      const ts = parseInt(id.split('-')[1]);
+      return isNaN(ts) ? 0 : ts;
+    }
+    return 0;
+  };
+
+  const sortedBlogs = [...db.blogs].sort((a, b) => {
+    const timeA = parseDate(a.date);
+    const timeB = parseDate(b.date);
+    if (timeA !== timeB) {
+      return timeB - timeA;
+    }
+    return getTimestampFromId(b.id) - getTimestampFromId(a.id);
+  });
+
+  res.json(sortedBlogs);
 });
 
 // Get Single Blog Post by ID or Slug
 app.get('/api/public/blogs/:idOrSlug', (req, res) => {
   const db = readDb();
   const idOrSlug = req.params.idOrSlug;
-  
   const post = db.blogs.find(b => b.id === idOrSlug || b.slug === idOrSlug);
   if (post) {
     return res.json(post);
@@ -370,10 +392,10 @@ app.get('/api/public/blogs/:idOrSlug', (req, res) => {
   res.status(404).json({ error: 'Blog post not found' });
 });
 
-// Get Gallery Images list
+// Get Gallery Images list (Newest First)
 app.get('/api/public/gallery', (req, res) => {
   const db = readDb();
-  res.json(db.gallery);
+  res.json([...db.gallery].reverse());
 });
 
 // ─── ADMIN WRITING/CRUD API ROUTES (AUTHENTICATED) ──────────
