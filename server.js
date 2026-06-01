@@ -811,6 +811,25 @@ Sitemap: https://www.universalfoundationindia.com/sitemap.xml`;
   res.send(content);
 });
 
+// ─── FAVICON ROUTES (must be before static/catch-all) ────────
+const faviconFiles = {
+  '/favicon.ico':         'favicon.ico',
+  '/favicon-32x32.png':  'favicon-32x32.png',
+  '/favicon-16x16.png':  'favicon-16x16.png',
+  '/apple-touch-icon.png': 'apple-touch-icon.png',
+  '/favicon-192x192.png': 'favicon-192x192.png',
+};
+
+Object.entries(faviconFiles).forEach(([route, file]) => {
+  app.get(route, (req, res) => {
+    const ext = path.extname(file).toLowerCase();
+    const mimeType = ext === '.ico' ? 'image/x-icon' : 'image/png';
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // cache 1 day
+    res.sendFile(path.join(__dirname, file));
+  });
+});
+
 // ─── SERVE FRONTEND STATIC FILES ────────────────────────────
 // Mount workspace root directory as static content
 app.use(express.static(path.join(__dirname)));
