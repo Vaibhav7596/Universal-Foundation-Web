@@ -185,27 +185,59 @@ function getCookies(req) {
   return cookies;
 }
 
-// Active Sessions Storage (in-memory)
-const activeSessions = new Map();
+// ─── PERSISTENT SESSION HELPERS ─────────────────────────────
+// Sessions are stored inside db.json so they survive server restarts
+// (important on Render free tier which restarts the dyno on inactivity)
+
+function getSessions() {
+  const db = readDb();
+  return db.sessions || {};
+}
+
+function saveSessions(sessions) {
+  const db = readDb();
+  db.sessions = sessions;
+  writeDb(db);
+}
+
+function purgeExpiredSessions() {
+  const sessions = getSessions();
+  const now = Date.now();
+  let changed = false;
+  Object.keys(sessions).forEach(id => {
+    if (sessions[id].expiry <= now) {
+      delete sessions[id];
+      changed = true;
+    }
+  });
+  if (changed) saveSessions(sessions);
+}
 
 // Authentication Verification Middleware
 function requireAdmin(req, res, next) {
   const cookies = getCookies(req);
   const sessionId = cookies.admin_session;
-  
-  if (sessionId && activeSessions.has(sessionId)) {
-    const session = activeSessions.get(sessionId);
-    if (session.expiry > Date.now()) {
+
+  if (sessionId) {
+    const sessions = getSessions();
+    const session = sessions[sessionId];
+    if (session && session.expiry > Date.now()) {
       req.adminUser = session.username;
-      // Refresh expiry to 2 hours of inactivity
+      // Slide the expiry window on every request (2 hr inactivity timeout)
       session.expiry = Date.now() + 2 * 60 * 60 * 1000;
+      sessions[sessionId] = session;
+      saveSessions(sessions);
       return next();
-    } else {
-      activeSessions.delete(sessionId);
+    }
+    // Expired — clean it up
+    if (session) {
+      const sessions2 = getSessions();
+      delete sessions2[sessionId];
+      saveSessions(sessions2);
     }
   }
-  
-  res.status(401).json({ error: 'Unauthorized: Invalid or expired session' });
+
+  res.status(401).json({ error: 'Unauthorized: Invalid or expired session. Please log in again.' });
 }
 
 // ─── FILE UPLOAD STORAGE CONFIGURATION ──────────────────────
@@ -251,13 +283,14 @@ app.post('/api/auth/login', (req, res) => {
       const sessionId = crypto.randomBytes(32).toString('hex');
       const sessionExpiry = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
 
-      activeSessions.set(sessionId, {
-        username: db.admin.username,
-        expiry: sessionExpiry
-      });
+      // Persist session to db.json (survives server restarts)
+      purgeExpiredSessions();
+      const sessions = getSessions();
+      sessions[sessionId] = { username: db.admin.username, expiry: sessionExpiry };
+      saveSessions(sessions);
 
-      // Set cookie header
-      res.setHeader('Set-Cookie', `admin_session=${sessionId}; HttpOnly; Path=/; SameSite=Strict; Max-Age=7200`);
+      // Set cookie header (24h max-age so browser keeps it across restarts)
+      res.setHeader('Set-Cookie', `admin_session=${sessionId}; HttpOnly; Path=/; SameSite=Strict; Max-Age=86400`);
       return res.json({ success: true, message: 'Logged in successfully' });
     }
   }
@@ -269,11 +302,13 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   const cookies = getCookies(req);
   const sessionId = cookies.admin_session;
-  
+
   if (sessionId) {
-    activeSessions.delete(sessionId);
+    const sessions = getSessions();
+    delete sessions[sessionId];
+    saveSessions(sessions);
   }
-  
+
   res.setHeader('Set-Cookie', 'admin_session=; HttpOnly; Path=/; SameSite=Strict; Max-Age=0');
   res.json({ success: true, message: 'Logged out successfully' });
 });
@@ -283,12 +318,15 @@ app.get('/api/auth/check', (req, res) => {
   const cookies = getCookies(req);
   const sessionId = cookies.admin_session;
 
-  if (sessionId && activeSessions.has(sessionId)) {
-    const session = activeSessions.get(sessionId);
-    if (session.expiry > Date.now()) {
+  if (sessionId) {
+    const sessions = getSessions();
+    const session = sessions[sessionId];
+    if (session && session.expiry > Date.now()) {
       return res.json({ authenticated: true, username: session.username });
     } else {
-      activeSessions.delete(sessionId);
+      // Expired — remove from persistent store
+      delete sessions[sessionId];
+      saveSessions(sessions);
     }
   }
   res.json({ authenticated: false });

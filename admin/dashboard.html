@@ -1579,28 +1579,42 @@
     e.preventDefault();
     const id = document.getElementById('blog-id-input').value;
     const form = document.getElementById('blog-modal-form');
-    
-    showToast(id ? "Updating article..." : "Publishing article...", "success");
-    const formData = new FormData(form);
 
+    const formData = new FormData(form);
     const method = id ? 'PUT' : 'POST';
     const url = id ? `/api/admin/blogs/${id}` : '/api/admin/blogs';
 
-    // Workaround for PUT requests in fetch with MultiPart form
-    fetch(url, {
-      method: method,
-      body: formData
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("Save blog failed");
-      return res.json();
-    })
-    .then(() => {
-      showToast(id ? "Blog article updated successfully!" : "Blog article published successfully!", "success");
-      closeBlogModal();
-      loadBlogs();
-    })
-    .catch(() => showToast("Failed to save blog post. Verify image formats and file size.", "error"));
+    const saveBtn = form.querySelector('.btn-save');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = id ? 'Saving…' : 'Publishing…'; }
+
+    showToast(id ? "Saving article..." : "Publishing article...", "success");
+
+    fetch(url, { method, body: formData })
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 401) {
+          showToast("Session expired — redirecting to login...", "error");
+          setTimeout(() => { window.location.href = '/admin/'; }, 1800);
+          throw new Error('session_expired');
+        }
+        if (!res.ok) {
+          throw new Error(data.error || `Server error ${res.status}`);
+        }
+        return data;
+      })
+      .then(() => {
+        showToast(id ? "Blog article updated successfully!" : "Blog article published successfully!", "success");
+        closeBlogModal();
+        loadBlogs();
+      })
+      .catch(err => {
+        if (err.message !== 'session_expired') {
+          showToast("Failed: " + err.message, "error");
+        }
+      })
+      .finally(() => {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = id ? 'Save Changes' : 'Publish Article'; }
+      });
   });
 
   function deleteBlog(id) {
