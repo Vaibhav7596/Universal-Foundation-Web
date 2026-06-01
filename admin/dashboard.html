@@ -1280,6 +1280,7 @@
     fetch('/api/public/events')
       .then(res => res.json())
       .then(events => {
+        window.allEvents = events;
         document.getElementById('stat-events-count').textContent = events.length;
         const tbody = document.getElementById('events-table-body');
         if (!events || events.length === 0) {
@@ -1296,13 +1297,19 @@
             <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-light);">${e.description}</td>
             <td>
               <div class="action-btn-group">
-                <button class="action-btn action-edit" onclick='openEventModal(${JSON.stringify(e).replace(/'/g, "&apos;")})' title="Edit"><i class="fa-solid fa-pen"></i></button>
+                <button class="action-btn action-edit" onclick="editEventById('${e.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
                 <button class="action-btn action-delete" onclick="deleteEvent('${e.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
           </tr>
         `).join('');
       });
+  }
+
+  function editEventById(id) {
+    if (!window.allEvents) return;
+    const e = window.allEvents.find(item => item.id === id);
+    if (e) openEventModal(e);
   }
 
   function openEventModal(eventObj = null) {
@@ -1506,6 +1513,7 @@
     fetch('/api/public/blogs')
       .then(res => res.json())
       .then(blogs => {
+        window.allBlogs = blogs;
         document.getElementById('stat-blogs-count').textContent = blogs.length;
         const tbody = document.getElementById('blogs-table-body');
         
@@ -1523,13 +1531,19 @@
             <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#666;">${b.summary}</td>
             <td>
               <div class="action-btn-group">
-                <button class="action-btn action-edit" onclick='openBlogModal(${JSON.stringify(b).replace(/'/g, "&apos;")})' title="Edit"><i class="fa-solid fa-pen"></i></button>
+                <button class="action-btn action-edit" onclick="editBlogById('${b.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
                 <button class="action-btn action-delete" onclick="deleteBlog('${b.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
           </tr>
         `).join('');
       });
+  }
+
+  function editBlogById(id) {
+    if (!window.allBlogs) return;
+    const b = window.allBlogs.find(item => item.id === id);
+    if (b) openBlogModal(b);
   }
 
   function openBlogModal(blogObj = null) {
@@ -1668,6 +1682,7 @@
   // ─── IMPACT GALLERY ─────────────────────────────────────────
   function loadImpactGallery() {
     fetch('/api/public/impact-gallery').then(res => res.json()).then(data => {
+      window.allImpactGallery = data;
       const tbody = document.getElementById('impact-table-body');
       if (tbody) {
         tbody.innerHTML = data.map(item => `
@@ -1678,7 +1693,7 @@
             <td>${(item.images || []).length} images</td>
             <td>
               <div class="action-btn-group">
-                <button type="button" class="action-btn action-edit" onclick='openImpactModal(${JSON.stringify(item).replace(/'/g, "&apos;")})' title="Edit"><i class="fa-solid fa-pen"></i></button>
+                <button type="button" class="action-btn action-edit" onclick="editImpactById('${item.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
                 <button type="button" class="action-btn action-delete" onclick="deleteImpactEvent('${item.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
               </div>
             </td>
@@ -1686,6 +1701,12 @@
         `).join('');
       }
     });
+  }
+
+  function editImpactById(id) {
+    if (!window.allImpactGallery) return;
+    const item = window.allImpactGallery.find(g => g.id === id);
+    if (item) openImpactModal(item);
   }
 
   function openImpactModal(item = null) {
