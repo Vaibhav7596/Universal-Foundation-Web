@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loading Article... â€” Universal Foundation</title>
+  <title>Loading Article... — Universal Foundation</title>
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -224,7 +224,7 @@
 
 <footer>
   <div class="footer-brand dynamic-brand">Universal Foundation</div>
-  <p>Â© 2026 <span class="dynamic-brand">Universal Foundation</span> Â· Surat, Gujarat</p>
+  <p>© 2026 <span class="dynamic-brand">Universal Foundation</span> · Surat, Gujarat</p>
   <p><a href="mailto:hellouniversalfoundation@gmail.com" class="dynamic-email">hellouniversalfoundation@gmail.com</a></p>
 </footer>
 
@@ -256,7 +256,7 @@
         return res.json();
       })
       .then(blog => {
-        document.title = `${blog.title} â€” Universal Foundation`;
+        document.title = `${blog.title} — Universal Foundation`;
         
         // Build dynamic share links
         const shareUrl = encodeURIComponent(window.location.href);
@@ -315,7 +315,7 @@
       });
       
     function renderError(title, msg) {
-      document.title = `Article Not Found â€” Universal Foundation`;
+      document.title = `Article Not Found — Universal Foundation`;
       pageContainer.innerHTML = `
         <div class="container error-wrap" data-aos="fade-up">
           <div style="background:var(--earth-sand); border-radius:var(--radius-lg); border:1px solid var(--earth-stone); padding:64px 48px; max-width:600px; margin:0 auto; box-shadow:var(--shadow-soft);">
