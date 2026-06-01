@@ -978,23 +978,23 @@
       <button class="admin-modal-close" onclick="closeBlogModal()"><i class="fa fa-close"></i></button>
     </div>
     <form id="blog-modal-form" enctype="multipart/form-data">
-      <input type="hidden" id="blog-id-input">
+      <input type="hidden" id="blog-id-input" name="id">
       <div class="admin-modal-body">
         <div class="admin-form-row">
           <div class="form-group">
             <label>Blog Post Title</label>
-            <input type="text" id="blog-title-input" required>
+            <input type="text" id="blog-title-input" name="title" required>
           </div>
           <div class="form-group">
             <label>Category (e.g. Youth Education, Disaster Management)</label>
-            <input type="text" id="blog-category-input" required placeholder="NGO Activities">
+            <input type="text" id="blog-category-input" name="category" required placeholder="NGO Activities">
           </div>
         </div>
 
         <div class="admin-form-row">
           <div class="form-group">
             <label>Publish Date (Blank for Auto Today)</label>
-            <input type="text" id="blog-date-input" placeholder="27 May 2026">
+            <input type="text" id="blog-date-input" name="date" placeholder="27 May 2026">
           </div>
           <div class="form-group">
             <label>Cover Image (JPEG, PNG, WEBP)</label>
@@ -1004,12 +1004,12 @@
         
         <div class="form-group">
           <label>Short Summary (A concise, compelling overview card description)</label>
-          <input type="text" id="blog-summary-input" required placeholder="A short 1-2 sentence preview text...">
+          <input type="text" id="blog-summary-input" name="summary" required placeholder="A short 1-2 sentence preview text...">
         </div>
 
         <div class="form-group">
           <label>Post Body Content (Write paragraph tags like &lt;p&gt;...&lt;/p&gt; and headings like &lt;h3&gt;...&lt;/h3&gt;)</label>
-          <textarea id="blog-content-input" style="min-height:200px;" required placeholder="Write your full article body here. Support standard paragraph and heading HTML tags."></textarea>
+          <textarea id="blog-content-input" name="content" style="min-height:200px;" required placeholder="Write your full article body here. Support standard paragraph and heading HTML tags."></textarea>
         </div>
       </div>
       <div class="admin-modal-footer">
