@@ -146,6 +146,49 @@ async function initDatabase() {
           "summary": "Learning from textbooks versus active flood rescue drills. An insightful guide to building community resilience in Gujarat.",
           "content": "<p>When disaster strikes, academic knowledge alone is rarely enough. In a flood, fire, or earthquake, split-second actions determine safety. That is why Universal Foundation has dedicated over two decades to creating realistic, hands-on disaster preparedness workshops for school children and residential communities across Gujarat.</p><h3>Active Muscle Memory</h3><p>During our training sessions, participants learn to handle fire extinguishers, map escape routes under low visibility, and practice survival swimming/rescue techniques. This active simulation creates strong muscle memory, which is essential to prevent panic during real-world crises.</p><h3>Building Strong Neighborhood Networks</h3><p>True community resilience begins at the neighborhood level. By training local youth clubs and resident associations, we ensure that every community has ready, equipped first responders who can act immediately before professional rescue teams arrive. Together, we are building a safer, more resilient India.</p>",
           "image": "images/index3of3.jpeg"
+        },
+        {
+          "id": "blog-3",
+          "slug": "green-shield-tree-plantation-ecological-planning",
+          "title": "The Green Shield: A Deep Dive into Tree Plantation and Ecological Planning",
+          "category": "Environmental Action",
+          "date": "24 May 2026",
+          "summary": "Nursery visits, tree diversity learning, and ground logistics. Discover how Universal Foundation coordinates tree plantation drives for high sapling survival rates.",
+          "content": "<p>Tree plantation drives are often viewed as simple one-off activities. However, at Universal Foundation, we know that true environmental restoration requires rigorous planning, local community involvement, and systematic execution. During our recent CSSI internship program, we took interns on a complete 3-day ecological journey—from nursery selection to ground preparation and active planting.</p><h3>Day 1: Nursery Visits and Biodiversity Studies</h3><p>We began at a local plant nursery, educating interns about native tree species, soil conditions, and regional climate resilience. Experts explained how different trees support local wildlife, lower regional temperatures, and clean local air. Every student was assigned specific native saplings to plant, learning soil-mixing and sapling-handling techniques.</p><h3>Day 2: Site Preparation and Pit Digging</h3><p>True logistics happened on day two. Working in coordinated volunteer teams under the supervision of senior NGO members, we cleared debris, dug systematically spaced pits, and mapped optimal areas on the designated green zone in Surat. This site preparation is key to ensuring that saplings receive proper resources and space to grow.</p><h3>Day 3: The Plantation Event</h3><p>On execution day, saplings were planted with care, and local community members actively joined the initiative. In total, hundreds of native trees were planted. The foundation works closely with local community teams to ensure these green belts are watered and nurtured regularly, fostering a shared sense of sustainable civic duty.</p>",
+          "image": "images/events1.jpeg"
+        },
+        {
+          "id": "blog-4",
+          "slug": "ready-for-action-fire-safety-equipment-handling",
+          "title": "Ready for Action: Fire Safety & Equipment Handling Training",
+          "category": "Civil Defense",
+          "date": "20 May 2026",
+          "summary": "Go behind the scenes of our recent interactive fire station safety training, equipment simulations, and vehicle functionality drills.",
+          "content": "<p>In an emergency, split-second decisions and precise muscle memory are the keys to saving lives. Through our partnership with regional fire department officials, Universal Foundation recently hosted a comprehensive, hands-on fire safety and rescue equipment training program for our civil safety interns.</p><h3>Day 1: Interactive Fire Station Visits</h3><p>The program kicked off with an immersive visit to the local fire station. Interns met active firefighting personnel and held interactive discussions about real-life emergency scenarios, crisis response workflows, and the extreme coordination required of public safety systems under stress.</p><h3>Day 2: Fire Extinguisher and Evacuation Drills</h3><p>Day two was fully hands-on. Trainees were introduced to different classes of fires (Class A, B, C, D) and practiced selecting and deploying the correct fire extinguishers. We simulated evacuation paths under thick smoke and taught firefighters' carries and rescue carries to handle injured or stranded citizens safely.</p><h3>Day 3: Fire Engine Demonstrations</h3><p>We concluded with a complete technical walkthrough of dynamic fire vehicle mechanics. Trainees learned about high-pressure water pumps, hose layouts, ladders, and watched live demonstrations of fire truck deployment in real-time. This empowering, practical training gives ordinary citizens the skills to respond safely and prevent small fires from turning into major catastrophes.</p>",
+          "image": "images/events3.jpeg"
+        },
+        {
+          "id": "blog-5",
+          "slug": "sentinel-water-tapi-cleanup-flood-rescue",
+          "title": "Sentinel of the Water: Tapi River Cleanliness & Flood Rescue Simulations",
+          "category": "Disaster Management",
+          "date": "10 May 2026",
+          "summary": "Cleaning the Tapi riverbank and training volunteers in flood rescue operations using inflatable boats, lifejackets, and rescue signaling tools.",
+          "content": "<p>Water bodies are the lifeblood of our cities, yet they are increasingly threatened by solid waste pollution. In a major community drive led by Universal Foundation, our teams combined Swachh Bharat cleanliness objectives with hands-on flood emergency rescue training on the banks of the Tapi River in Surat.</p><h3>Cleanliness Drive: The Tapi Cleanup</h3><p>Focusing on the Tapi riverbank, volunteers and interns actively removed large amounts of plastic waste, discarded non-biodegradable debris, and solid trash. Mentors gave brief on-site lectures detailing how river pollution severely impacts regional groundwater reservoirs and disrupts riverbed ecosystems. The cleanup drive emphasized waste segregation and correct disposal workflows.</p><h3>Emergency Preparedness: Flood Rescue Operations</h3><p>Surat has faced historical flood challenges, making water rescue training a critical skill. Our trainers led flood simulation drills where interns learned the proper use of life jackets, throwing rescue lines/ropes, operating signaling tools, and boarding inflatable rescue boats. Instructors shared operational rescue experiences and built composure techniques to keep stranded citizens calm during actual floods. This hybrid environmental-emergency event leaves our youth equipped to protect both nature and human lives.</p>",
+          "image": "images/events2.jpeg"
+        }
+      ],
+      impactGallery: [
+        {
+          "id": "ig-1",
+          "year": "2026",
+          "title": "Health Camp & Food Distribution",
+          "description": "Organized health check-ups and distributed ration kits.",
+          "eventDate": "15 May 2026",
+          "images": [
+            "images/index1of3.jpeg",
+            "images/index2of3.jpeg"
+          ]
         }
       ]
     };
@@ -218,6 +261,97 @@ Admin Password: ${defaultPassword}
         dbCache = getSeededData();
         fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2));
       }
+    }
+  }
+
+  // Ensure default blogs and impact gallery exist in the loaded cache (from either Mongo or local)
+  if (dbCache) {
+    if (!dbCache.blogs) {
+      dbCache.blogs = [];
+    }
+    const defaultBlogs = [
+      {
+        "id": "blog-1",
+        "slug": "empowering-youth-cssi-internship",
+        "title": "Empowering Youth: The CSSI 21-Day Internship Journey",
+        "category": "Youth Education",
+        "date": "27 May 2026",
+        "summary": "Discover how the Universal Foundation is training the next generation of social leaders through hands-on emergency drills, cybersecurity training, and environmental action.",
+        "content": "<p>At Universal Foundation, we believe in bridging the gap between classroom theory and community action. Our flagship 21-day CSSI (Civil Safety & Social Initiative) Internship provides university and high school students with an intensive, immersive experience in social work, disaster preparedness, and community service.</p><h3>Hands-on Emergency Drills</h3><p>Unlike regular internships, CSSI participants don't sit behind desks. They participate actively in fire rescue exercises, flood response strategies, and first-aid response drills guided by trained industry professionals. This builds teamwork, resilience, and actionable life-saving capabilities.</p><h3>Cybersecurity & Environmental Drives</h3><p>In addition to safety drills, interns run cybersecurity workshops for senior citizens and lead extensive tree plantation drives across green zones in Surat, Gujarat. Through this diverse curriculum, we empower our youth to become compassionate, informed, and proactive leaders of tomorrow.</p>",
+        "image": "images/index1of3.jpeg"
+      },
+      {
+        "id": "blog-2",
+        "slug": "disaster-preparedness-community-resilience",
+        "title": "Disaster Preparedness: Why Hands-on Drills Matter",
+        "category": "Disaster Management",
+        "date": "15 May 2026",
+        "summary": "Learning from textbooks versus active flood rescue drills. An insightful guide to building community resilience in Gujarat.",
+        "content": "<p>When disaster strikes, academic knowledge alone is rarely enough. In a flood, fire, or earthquake, split-second actions determine safety. That is why Universal Foundation has dedicated over two decades to creating realistic, hands-on disaster preparedness workshops for school children and residential communities across Gujarat.</p><h3>Active Muscle Memory</h3><p>During our training sessions, participants learn to handle fire extinguishers, map escape routes under low visibility, and practice survival swimming/rescue techniques. This active simulation creates strong muscle memory, which is essential to prevent panic during real-world crises.</p><h3>Building Strong Neighborhood Networks</h3><p>True community resilience begins at the neighborhood level. By training local youth clubs and resident associations, we ensure that every community has ready, equipped first responders who can act immediately before professional rescue teams arrive. Together, we are building a safer, more resilient India.</p>",
+        "image": "images/index3of3.jpeg"
+      },
+      {
+        "id": "blog-3",
+        "slug": "green-shield-tree-plantation-ecological-planning",
+        "title": "The Green Shield: A Deep Dive into Tree Plantation and Ecological Planning",
+        "category": "Environmental Action",
+        "date": "24 May 2026",
+        "summary": "Nursery visits, tree diversity learning, and ground logistics. Discover how Universal Foundation coordinates tree plantation drives for high sapling survival rates.",
+        "content": "<p>Tree plantation drives are often viewed as simple one-off activities. However, at Universal Foundation, we know that true environmental restoration requires rigorous planning, local community involvement, and systematic execution. During our recent CSSI internship program, we took interns on a complete 3-day ecological journey—from nursery selection to ground preparation and active planting.</p><h3>Day 1: Nursery Visits and Biodiversity Studies</h3><p>We began at a local plant nursery, educating interns about native tree species, soil conditions, and regional climate resilience. Experts explained how different trees support local wildlife, lower regional temperatures, and clean local air. Every student was assigned specific native saplings to plant, learning soil-mixing and sapling-handling techniques.</p><h3>Day 2: Site Preparation and Pit Digging</h3><p>True logistics happened on day two. Working in coordinated volunteer teams under the supervision of senior NGO members, we cleared debris, dug systematically spaced pits, and mapped optimal areas on the designated green zone in Surat. This site preparation is key to ensuring that saplings receive proper resources and space to grow.</p><h3>Day 3: The Plantation Event</h3><p>On execution day, saplings were planted with care, and local community members actively joined the initiative. In total, hundreds of native trees were planted. The foundation works closely with local community teams to ensure these green belts are watered and nurtured regularly, fostering a shared sense of sustainable civic duty.</p>",
+        "image": "images/events1.jpeg"
+      },
+      {
+        "id": "blog-4",
+        "slug": "ready-for-action-fire-safety-equipment-handling",
+        "title": "Ready for Action: Fire Safety & Equipment Handling Training",
+        "category": "Civil Defense",
+        "date": "20 May 2026",
+        "summary": "Go behind the scenes of our recent interactive fire station safety training, equipment simulations, and vehicle functionality drills.",
+        "content": "<p>In an emergency, split-second decisions and precise muscle memory are the keys to saving lives. Through our partnership with regional fire department officials, Universal Foundation recently hosted a comprehensive, hands-on fire safety and rescue equipment training program for our civil safety interns.</p><h3>Day 1: Interactive Fire Station Visits</h3><p>The program kicked off with an immersive visit to the local fire station. Interns met active firefighting personnel and held interactive discussions about real-life emergency scenarios, crisis response workflows, and the extreme coordination required of public safety systems under stress.</p><h3>Day 2: Fire Extinguisher and Evacuation Drills</h3><p>Day two was fully hands-on. Trainees were introduced to different classes of fires (Class A, B, C, D) and practiced selecting and deploying the correct fire extinguishers. We simulated evacuation paths under thick smoke and taught firefighters' carries and rescue carries to handle injured or stranded citizens safely.</p><h3>Day 3: Fire Engine Demonstrations</h3><p>We concluded with a complete technical walkthrough of dynamic fire vehicle mechanics. Trainees learned about high-pressure water pumps, hose layouts, ladders, and watched live demonstrations of fire truck deployment in real-time. This empowering, practical training gives ordinary citizens the skills to respond safely and prevent small fires from turning into major catastrophes.</p>",
+        "image": "images/events3.jpeg"
+      },
+      {
+        "id": "blog-5",
+        "slug": "sentinel-water-tapi-cleanup-flood-rescue",
+        "title": "Sentinel of the Water: Tapi River Cleanliness & Flood Rescue Simulations",
+        "category": "Disaster Management",
+        "date": "10 May 2026",
+        "summary": "Cleaning the Tapi riverbank and training volunteers in flood rescue operations using inflatable boats, lifejackets, and rescue signaling tools.",
+        "content": "<p>Water bodies are the lifeblood of our cities, yet they are increasingly threatened by solid waste pollution. In a major community drive led by Universal Foundation, our teams combined Swachh Bharat cleanliness objectives with hands-on flood emergency rescue training on the banks of the Tapi River in Surat.</p><h3>Cleanliness Drive: The Tapi Cleanup</h3><p>Focusing on the Tapi riverbank, volunteers and interns actively removed large amounts of plastic waste, discarded non-biodegradable debris, and solid trash. Mentors gave brief on-site lectures detailing how river pollution severely impacts regional groundwater reservoirs and disrupts riverbed ecosystems. The cleanup drive emphasized waste segregation and correct disposal workflows.</p><h3>Emergency Preparedness: Flood Rescue Operations</h3><p>Surat has faced historical flood challenges, making water rescue training a critical skill. Our trainers led flood simulation drills where interns learned the proper use of life jackets, throwing rescue lines/ropes, operating signaling tools, and boarding inflatable rescue boats. Instructors shared operational rescue experiences and built composure techniques to keep stranded citizens calm during actual floods. This hybrid environmental-emergency event leaves our youth equipped to protect both nature and human lives.</p>",
+        "image": "images/events2.jpeg"
+      }
+    ];
+
+    let hasUpdates = false;
+    for (const defBlog of defaultBlogs) {
+      if (!dbCache.blogs.some(b => b.id === defBlog.id || b.slug === defBlog.slug)) {
+        console.log(`Adding missing default blog: ${defBlog.title}`);
+        dbCache.blogs.push(defBlog);
+        hasUpdates = true;
+      }
+    }
+
+    if (!dbCache.impactGallery || dbCache.impactGallery.length === 0) {
+      console.log("Adding missing default impactGallery...");
+      dbCache.impactGallery = [
+        {
+          "id": "ig-1",
+          "year": "2026",
+          "title": "Health Camp & Food Distribution",
+          "description": "Organized health check-ups and distributed ration kits.",
+          "eventDate": "15 May 2026",
+          "images": [
+            "images/index1of3.jpeg",
+            "images/index2of3.jpeg"
+          ]
+        }
+      ];
+      hasUpdates = true;
+    }
+
+    if (hasUpdates) {
+      console.log("Database default elements updated. Triggering database write sync...");
+      writeDb(dbCache);
     }
   }
 }
