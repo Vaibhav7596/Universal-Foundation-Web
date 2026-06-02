@@ -1,0 +1,41 @@
+# Render Blueprint Specification for Universal Foundation NGO Website
+# To deploy: Go to Render Dashboard -> New -> Blueprint -> Connect this repository
+
+services:
+  - type: web
+    name: universal-foundation-ngo
+    runtime: node
+    plan: free # Default to Render's Free tier
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: ADMIN_USERNAME
+        sync: false # Set custom admin username in the Render Dashboard env vars
+      - key: ADMIN_PASSWORD
+        sync: false # Set custom admin password in the Render Dashboard env vars
+
+    # NOTE ON PERSISTENT STORAGE:
+    # Render's Free plan uses an ephemeral disk. Any admin updates (events, blogs, settings)
+    # and file uploads (gallery/blog images) will be lost when the server restarts or redeploys.
+    # 
+    # To persist changes and uploads on Render, you have two options:
+    #
+    # Option A (Recommended): Connect external services
+    # - For uploads: The project has Cloudinary dependencies in package.json. You can configure
+    #   Cloudinary integration in server.js to store images persistently in the cloud.
+    # - For data: Migrate from db.json to a managed database like MongoDB Atlas or Render PostgreSQL,
+    #   and configure it in server.js.
+    #
+    # Option B: Use a Render Persistent Disk (Paid Plan required)
+    # - Change "plan: free" to "plan: starter" above (or higher)
+    # - Uncomment the "disk" section below. Since Render only allows ONE disk per web service,
+    #   you would mount it to a single directory (e.g. /opt/render/project/src/data) to persist db.json:
+    #
+    # disk:
+    #   name: ngo-data
+    #   mountPath: /opt/render/project/src/data
+    #   sizeGB: 1
