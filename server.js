@@ -80,7 +80,12 @@ async function initDatabase() {
           { "id": "stat-planted", "target": "1000", "label": "Trees Planted" },
           { "id": "stat-trained", "target": "200", "label": "Volunteers Trained" },
           { "id": "stat-cities-reached", "target": "10", "label": "Cities Reached" }
-        ]
+        ],
+        donation: {
+          message: "Your contribution helps us continue our mission of saving lives and building resilient communities.",
+          upiId: "hellouniversalfoundation@oksbi",
+          qrImage: "images/Qr.jpeg"
+        }
       },
       events: [
         {
@@ -219,6 +224,17 @@ Admin Password: ${defaultPassword}
         fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2));
       }
     }
+  }
+
+  // Ensure donation settings exist in the active loaded configuration
+  if (dbCache && dbCache.settings && !dbCache.settings.donation) {
+    console.log("Setting default donation settings in configuration cache...");
+    dbCache.settings.donation = {
+      message: "Your contribution helps us continue our mission of saving lives and building resilient communities.",
+      upiId: "hellouniversalfoundation@oksbi",
+      qrImage: "images/Qr.jpeg"
+    };
+    writeDb(dbCache);
   }
 }
 
