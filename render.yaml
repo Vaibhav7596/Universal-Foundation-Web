@@ -17,6 +17,8 @@ services:
         sync: false # Set custom admin username in the Render Dashboard env vars
       - key: ADMIN_PASSWORD
         sync: false # Set custom admin password in the Render Dashboard env vars
+      - key: MONGODB_URI
+        sync: false # Connect to MongoDB Atlas connection string (leave empty to fallback to local db.json)
 
     # NOTE ON PERSISTENT STORAGE:
     # Render's Free plan uses an ephemeral disk. Any admin updates (events, blogs, settings)

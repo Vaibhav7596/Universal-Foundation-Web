@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,135 +33,215 @@ function generateSalt() {
 const defaultUsername = process.env.ADMIN_USERNAME || 'admin';
 const defaultPassword = process.env.ADMIN_PASSWORD || 'UniversalNGO2026!';
 
-if (!fs.existsSync(dbPath)) {
-  const salt = generateSalt();
-  const passwordHash = hashPassword(defaultPassword, salt);
+let mongoClient = null;
+let mongoCol = null;
+let dbCache = null;
 
-  const initialData = {
-    admin: {
-      username: defaultUsername,
-      passwordHash: passwordHash,
-      salt: salt
-    },
-    settings: {
-      hero: {
-        eyebrow: "Est. 2000 · Surat, Gujarat",
-        title: "Building a<br><em>Better Tomorrow</em>",
-        description: "Empowering communities through disaster preparedness, environmental action, and life-saving education across India."
+async function initDatabase() {
+  const mongoUri = process.env.MONGODB_URI;
+
+  const getSeededData = () => {
+    const salt = generateSalt();
+    const passwordHash = hashPassword(defaultPassword, salt);
+    return {
+      admin: {
+        username: defaultUsername,
+        passwordHash: passwordHash,
+        salt: salt
       },
-      aboutIntro: {
-        label: "Who We Are",
-        title: "25 Years of<br>Meaningful Impact",
-        description: "Established on 15th August 2000, Universal Foundation has worked for over two decades to equip individuals with essential life-saving skills and promote community awareness — from disaster preparedness to environmental sustainability."
+      settings: {
+        hero: {
+          eyebrow: "Est. 2000 · Surat, Gujarat",
+          title: "Building a<br><em>Better Tomorrow</em>",
+          description: "Empowering communities through disaster preparedness, environmental action, and life-saving education across India."
+        },
+        aboutIntro: {
+          label: "Who We Are",
+          title: "25 Years of<br>Meaningful Impact",
+          description: "Established on 15th August 2000, Universal Foundation has worked for over two decades to equip individuals with essential life-saving skills and promote community awareness — from disaster preparedness to environmental sustainability."
+        },
+        contact: {
+          phone: "+91 83478 07007",
+          phoneRaw: "918347807007",
+          email: "hellouniversalfoundation@gmail.com",
+          location: "Surat, Gujarat, India",
+          whatsapp: "https://wa.me/918347807007",
+          mapUrl: "https://www.google.com/maps?q=Universal+Foundation+Surat&output=embed"
+        },
+        stats: [
+          { "id": "stat-lives", "target": "1000", "label": "Lives Impacted" },
+          { "id": "stat-events", "target": "25", "label": "Events Held" },
+          { "id": "stat-cities", "target": "10", "label": "Cities Reached" },
+          { "id": "stat-years", "target": "25", "label": "Years of Service" }
+        ],
+        workStats: [
+          { "id": "stat-fed", "target": "500", "label": "Families Fed" },
+          { "id": "stat-planted", "target": "1000", "label": "Trees Planted" },
+          { "id": "stat-trained", "target": "200", "label": "Volunteers Trained" },
+          { "id": "stat-cities-reached", "target": "10", "label": "Cities Reached" }
+        ]
       },
-      contact: {
-        phone: "+91 83478 07007",
-        phoneRaw: "918347807007",
-        email: "hellouniversalfoundation@gmail.com",
-        location: "Surat, Gujarat, India",
-        whatsapp: "https://wa.me/918347807007",
-        mapUrl: "https://www.google.com/maps?q=Universal+Foundation+Surat&output=embed"
-      },
-      stats: [
-        { "id": "stat-lives", "target": "1000", "label": "Lives Impacted" },
-        { "id": "stat-events", "target": "25", "label": "Events Held" },
-        { "id": "stat-cities", "target": "10", "label": "Cities Reached" },
-        { "id": "stat-years", "target": "25", "label": "Years of Service" }
+      events: [
+        {
+          "id": "event-1",
+          "date": "10 June 2026",
+          "icon": "fa-seedling",
+          "title": "Tree Plantation Drive",
+          "description": "Join us for a large-scale plantation event across Surat's green zones. All volunteers welcome — tools and saplings provided.",
+          "location": "Surat, Gujarat"
+        },
+        {
+          "id": "event-2",
+          "date": "20 June 2026",
+          "icon": "fa-heart-pulse",
+          "title": "Health Awareness Camp",
+          "description": "Free health check-ups, first-aid demonstrations, and wellness talks for the community — no registration required.",
+          "location": "Ahmedabad, Gujarat"
+        },
+        {
+          "id": "event-3",
+          "date": "July 2026",
+          "icon": "fa-shield-halved",
+          "title": "Disaster Preparedness Workshop",
+          "description": "Hands-on training for flood response, fire safety, and emergency first response. Certificates provided on completion.",
+          "location": "Surat, Gujarat"
+        }
       ],
-      workStats: [
-        { "id": "stat-fed", "target": "500", "label": "Families Fed" },
-        { "id": "stat-planted", "target": "1000", "label": "Trees Planted" },
-        { "id": "stat-trained", "target": "200", "label": "Volunteers Trained" },
-        { "id": "stat-cities-reached", "target": "10", "label": "Cities Reached" }
+      internships: [
+        {
+          "id": "internship-1",
+          "title": "Applications Open",
+          "description": "Apply for the next CSSI Internship batch or reach out to learn more about how to participate.",
+          "status": "open",
+          "batch": "CSSI Internship - June-July 2026"
+        }
+      ],
+      gallery: [
+        "images/index1of3.jpeg",
+        "images/index2of3.jpeg",
+        "images/index3of3.jpeg",
+        "images/events1.jpeg",
+        "images/events2.jpeg",
+        "images/events3.jpeg",
+        "images/events4.jpeg"
+      ],
+      blogs: [
+        {
+          "id": "blog-1",
+          "slug": "empowering-youth-cssi-internship",
+          "title": "Empowering Youth: The CSSI 21-Day Internship Journey",
+          "category": "Youth Education",
+          "date": "27 May 2026",
+          "summary": "Discover how the Universal Foundation is training the next generation of social leaders through hands-on emergency drills, cybersecurity training, and environmental action.",
+          "content": "<p>At Universal Foundation, we believe in bridging the gap between classroom theory and community action. Our flagship 21-day CSSI (Civil Safety & Social Initiative) Internship provides university and high school students with an intensive, immersive experience in social work, disaster preparedness, and community service.</p><h3>Hands-on Emergency Drills</h3><p>Unlike regular internships, CSSI participants don't sit behind desks. They participate actively in fire rescue exercises, flood response strategies, and first-aid response drills guided by trained industry professionals. This builds teamwork, resilience, and actionable life-saving capabilities.</p><h3>Cybersecurity & Environmental Drives</h3><p>In addition to safety drills, interns run cybersecurity workshops for senior citizens and lead extensive tree plantation drives across green zones in Surat, Gujarat. Through this diverse curriculum, we empower our youth to become compassionate, informed, and proactive leaders of tomorrow.</p>",
+          "image": "images/index1of3.jpeg"
+        },
+        {
+          "id": "blog-2",
+          "slug": "disaster-preparedness-community-resilience",
+          "title": "Disaster Preparedness: Why Hands-on Drills Matter",
+          "category": "Disaster Management",
+          "date": "15 May 2026",
+          "summary": "Learning from textbooks versus active flood rescue drills. An insightful guide to building community resilience in Gujarat.",
+          "content": "<p>When disaster strikes, academic knowledge alone is rarely enough. In a flood, fire, or earthquake, split-second actions determine safety. That is why Universal Foundation has dedicated over two decades to creating realistic, hands-on disaster preparedness workshops for school children and residential communities across Gujarat.</p><h3>Active Muscle Memory</h3><p>During our training sessions, participants learn to handle fire extinguishers, map escape routes under low visibility, and practice survival swimming/rescue techniques. This active simulation creates strong muscle memory, which is essential to prevent panic during real-world crises.</p><h3>Building Strong Neighborhood Networks</h3><p>True community resilience begins at the neighborhood level. By training local youth clubs and resident associations, we ensure that every community has ready, equipped first responders who can act immediately before professional rescue teams arrive. Together, we are building a safer, more resilient India.</p>",
+          "image": "images/index3of3.jpeg"
+        }
       ]
-    },
-    events: [
-      {
-        "id": "event-1",
-        "date": "10 June 2026",
-        "icon": "fa-seedling",
-        "title": "Tree Plantation Drive",
-        "description": "Join us for a large-scale plantation event across Surat's green zones. All volunteers welcome — tools and saplings provided.",
-        "location": "Surat, Gujarat"
-      },
-      {
-        "id": "event-2",
-        "date": "20 June 2026",
-        "icon": "fa-heart-pulse",
-        "title": "Health Awareness Camp",
-        "description": "Free health check-ups, first-aid demonstrations, and wellness talks for the community — no registration required.",
-        "location": "Ahmedabad, Gujarat"
-      },
-      {
-        "id": "event-3",
-        "date": "July 2026",
-        "icon": "fa-shield-halved",
-        "title": "Disaster Preparedness Workshop",
-        "description": "Hands-on training for flood response, fire safety, and emergency first response. Certificates provided on completion.",
-        "location": "Surat, Gujarat"
-      }
-    ],
-    internships: [
-      {
-        "id": "internship-1",
-        "title": "Applications Open",
-        "description": "Apply for the next CSSI Internship batch or reach out to learn more about how to participate.",
-        "status": "open",
-        "batch": "CSSI Internship - June-July 2026"
-      }
-    ],
-    gallery: [
-      "images/index1of3.jpeg",
-      "images/index2of3.jpeg",
-      "images/index3of3.jpeg",
-      "images/events1.jpeg",
-      "images/events2.jpeg",
-      "images/events3.jpeg",
-      "images/events4.jpeg"
-    ],
-    blogs: [
-      {
-        "id": "blog-1",
-        "slug": "empowering-youth-cssi-internship",
-        "title": "Empowering Youth: The CSSI 21-Day Internship Journey",
-        "category": "Youth Education",
-        "date": "27 May 2026",
-        "summary": "Discover how the Universal Foundation is training the next generation of social leaders through hands-on emergency drills, cybersecurity training, and environmental action.",
-        "content": "<p>At Universal Foundation, we believe in bridging the gap between classroom theory and community action. Our flagship 21-day CSSI (Civil Safety & Social Initiative) Internship provides university and high school students with an intensive, immersive experience in social work, disaster preparedness, and community service.</p><h3>Hands-on Emergency Drills</h3><p>Unlike regular internships, CSSI participants don't sit behind desks. They participate actively in fire rescue exercises, flood response strategies, and first-aid response drills guided by trained industry professionals. This builds teamwork, resilience, and actionable life-saving capabilities.</p><h3>Cybersecurity & Environmental Drives</h3><p>In addition to safety drills, interns run cybersecurity workshops for senior citizens and lead extensive tree plantation drives across green zones in Surat, Gujarat. Through this diverse curriculum, we empower our youth to become compassionate, informed, and proactive leaders of tomorrow.</p>",
-        "image": "images/index1of3.jpeg"
-      },
-      {
-        "id": "blog-2",
-        "slug": "disaster-preparedness-community-resilience",
-        "title": "Disaster Preparedness: Why Hands-on Drills Matter",
-        "category": "Disaster Management",
-        "date": "15 May 2026",
-        "summary": "Learning from textbooks versus active flood rescue drills. An insightful guide to building community resilience in Gujarat.",
-        "content": "<p>When disaster strikes, academic knowledge alone is rarely enough. In a flood, fire, or earthquake, split-second actions determine safety. That is why Universal Foundation has dedicated over two decades to creating realistic, hands-on disaster preparedness workshops for school children and residential communities across Gujarat.</p><h3>Active Muscle Memory</h3><p>During our training sessions, participants learn to handle fire extinguishers, map escape routes under low visibility, and practice survival swimming/rescue techniques. This active simulation creates strong muscle memory, which is essential to prevent panic during real-world crises.</p><h3>Building Strong Neighborhood Networks</h3><p>True community resilience begins at the neighborhood level. By training local youth clubs and resident associations, we ensure that every community has ready, equipped first responders who can act immediately before professional rescue teams arrive. Together, we are building a safer, more resilient India.</p>",
-        "image": "images/index3of3.jpeg"
-      }
-    ]
+    };
   };
 
-  fs.writeFileSync(dbPath, JSON.stringify(initialData, null, 2));
-  console.log(`
+  if (mongoUri) {
+    console.log("MongoDB Connection String provided. Initializing connection to MongoDB Atlas...");
+    try {
+      mongoClient = new MongoClient(mongoUri);
+      await mongoClient.connect();
+      const db = mongoClient.db("universal_foundation");
+      mongoCol = db.collection("cms_store");
+      
+      const doc = await mongoCol.findOne({ _id: "site_state" });
+      if (doc) {
+        const { _id, ...cleanData } = doc;
+        dbCache = cleanData;
+        console.log("✅ Successfully loaded CMS state from MongoDB Atlas.");
+      } else {
+        console.log("⚠️ No state found in MongoDB Atlas. Seeding data...");
+        let seed = null;
+        if (fs.existsSync(dbPath)) {
+          try {
+            seed = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+            console.log("Found existing local db.json. Migrating local data to MongoDB Atlas...");
+          } catch (e) {
+            console.error("Failed to parse local db.json, generating default data:", e);
+          }
+        }
+        if (!seed) {
+          seed = getSeededData();
+        }
+        await mongoCol.replaceOne({ _id: "site_state" }, seed, { upsert: true });
+        dbCache = seed;
+        console.log("✅ CMS state successfully seeded and saved to MongoDB Atlas.");
+      }
+
+      // Write local backup copy
+      fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2));
+
+    } catch (error) {
+      console.error("❌ MongoDB connection or query failed:", error);
+      console.log("Falling back to local file db.json.");
+      mongoCol = null;
+      mongoClient = null;
+    }
+  }
+
+  // Fallback if MONGODB_URI is not provided or if connection failed
+  if (!dbCache) {
+    console.log("Initializing local file-based database...");
+    if (!fs.existsSync(dbPath)) {
+      dbCache = getSeededData();
+      fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2));
+      console.log(`
 ==================================================
-CMS DATABASE INITIALIZED
+CMS LOCAL DATABASE INITIALIZED (Fallback)
 Admin Username: ${defaultUsername}
 Admin Password: ${defaultPassword}
-(Please change this password immediately in the dashboard!)
 ==================================================
-  `);
+      `);
+    } else {
+      try {
+        dbCache = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+        console.log("✅ Successfully loaded CMS state from local db.json.");
+      } catch (e) {
+        console.error("❌ Failed to load local db.json, generating default data:", e);
+        dbCache = getSeededData();
+        fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2));
+      }
+    }
+  }
 }
 
 // Helper to read DB
 function readDb() {
-  return JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  return dbCache;
 }
 
 // Helper to write DB
 function writeDb(data) {
-  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+  dbCache = data;
+  
+  // Write to local cache file
+  try {
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error("Failed to write local backup:", err);
+  }
+
+  // Asynchronously save to MongoDB if connected
+  if (mongoCol) {
+    mongoCol.replaceOne({ _id: "site_state" }, data, { upsert: true })
+      .catch(err => {
+        console.error("❌ Async write to MongoDB Atlas failed:", err);
+      });
+  }
 }
 
 // ─── MIDDLEWARES ────────────────────────────────────────────
@@ -922,7 +1003,11 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// ─── START SERVER ───────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`Universal Foundation CMS serving at: http://localhost:${PORT}`);
-});
+// ─── START SERVER WITH DATABASE INITIALIZATION ─────────────
+async function startServer() {
+  await initDatabase();
+  app.listen(PORT, () => {
+    console.log(`Universal Foundation CMS serving at: http://localhost:${PORT}`);
+  });
+}
+startServer();
