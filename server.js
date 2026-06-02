@@ -240,7 +240,11 @@ function writeDb(data) {
 
   // Asynchronously save to MongoDB if connected
   if (mongoCol) {
-    mongoCol.replaceOne({ _id: "site_state" }, data, { upsert: true })
+    const docToSave = { _id: "site_state", ...data };
+    mongoCol.replaceOne({ _id: "site_state" }, docToSave, { upsert: true })
+      .then(result => {
+        console.log(`✅ MongoDB Atlas sync successful. (Matched: ${result.matchedCount}, Modified: ${result.modifiedCount}, Upserted: ${result.upsertedCount})`);
+      })
       .catch(err => {
         console.error("❌ Async write to MongoDB Atlas failed:", err);
       });
