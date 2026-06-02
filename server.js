@@ -229,6 +229,7 @@ function readDb() {
 
 // Helper to write DB
 function writeDb(data) {
+  console.log("Database update triggered. mongoCol is:", mongoCol ? "connected" : "null/offline");
   dbCache = data;
   
   // Write to local cache file
@@ -241,6 +242,7 @@ function writeDb(data) {
   // Asynchronously save to MongoDB if connected
   if (mongoCol) {
     const docToSave = { _id: "site_state", ...data };
+    console.log("Sending replaceOne to MongoDB Atlas for _id: site_state...");
     mongoCol.replaceOne({ _id: "site_state" }, docToSave, { upsert: true })
       .then(result => {
         console.log(`✅ MongoDB Atlas sync successful. (Matched: ${result.matchedCount}, Modified: ${result.modifiedCount}, Upserted: ${result.upsertedCount})`);
