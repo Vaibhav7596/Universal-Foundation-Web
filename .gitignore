@@ -1,5 +1,4 @@
 node_modules/
 uploads/
-data/db.json
 .env
 *.log
