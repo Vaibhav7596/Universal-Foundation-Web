@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -191,6 +192,8 @@ async function initDatabase() {
       mongoCol = null;
       mongoClient = null;
     }
+  } else {
+    console.warn("⚠️ MONGODB_URI environment variable is not defined or empty.");
   }
 
   // Fallback if MONGODB_URI is not provided or if connection failed
