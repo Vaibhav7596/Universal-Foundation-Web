@@ -80,12 +80,7 @@ async function initDatabase() {
           { "id": "stat-planted", "target": "1000", "label": "Trees Planted" },
           { "id": "stat-trained", "target": "200", "label": "Volunteers Trained" },
           { "id": "stat-cities-reached", "target": "10", "label": "Cities Reached" }
-        ],
-        donation: {
-          message: "Your contribution helps us continue our mission of saving lives and building resilient communities.",
-          upiId: "hellouniversalfoundation@oksbi",
-          qrImage: "images/Qr.jpeg"
-        }
+        ]
       },
       events: [
         {
@@ -224,29 +219,6 @@ Admin Password: ${defaultPassword}
         fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2));
       }
     }
-  }
-
-  // Ensure donation settings exist in the active loaded configuration.
-  // SAFE: Only patch the missing field using $set — never do a full replaceOne here
-  // to avoid accidentally overwriting real blog/event data with incomplete state.
-  if (dbCache && dbCache.settings && !dbCache.settings.donation) {
-    console.log("Adding missing donation defaults to in-memory cache...");
-    dbCache.settings.donation = {
-      message: "Your contribution helps us continue our mission of saving lives and building resilient communities.",
-      upiId: "hellouniversalfoundation@oksbi",
-      qrImage: "images/Qr.jpeg"
-    };
-    // Patch ONLY this field in MongoDB — do NOT replace the full document
-    if (mongoCol) {
-      mongoCol.updateOne(
-        { _id: "site_state" },
-        { $set: { "settings.donation": dbCache.settings.donation } },
-        { upsert: false }
-      ).then(() => console.log("✅ Donation defaults patched in MongoDB Atlas."))
-       .catch(err => console.error("⚠️ Could not patch donation defaults in MongoDB:", err));
-    }
-    // Also update local backup file
-    try { fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2)); } catch (_) {}
   }
 }
 
