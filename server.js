@@ -378,10 +378,33 @@ app.get('/api/public/settings', (req, res) => {
   res.json(db.settings);
 });
 
-// Get Upcoming Events
+// Get Upcoming Events (Sorted by Date Descending, Newest First)
 app.get('/api/public/events', (req, res) => {
   const db = readDb();
-  res.json(db.events);
+
+  const parseDate = (dStr) => {
+    const d = new Date(dStr);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+
+  const getTimestampFromId = (id) => {
+    if (typeof id === 'string' && id.startsWith('event-')) {
+      const ts = parseInt(id.split('-')[1]);
+      return isNaN(ts) ? 0 : ts;
+    }
+    return 0;
+  };
+
+  const sortedEvents = [...db.events].sort((a, b) => {
+    const timeA = parseDate(a.date);
+    const timeB = parseDate(b.date);
+    if (timeA !== timeB) {
+      return timeB - timeA;
+    }
+    return getTimestampFromId(b.id) - getTimestampFromId(a.id);
+  });
+
+  res.json(sortedEvents);
 });
 
 // Get Internship Schedules
