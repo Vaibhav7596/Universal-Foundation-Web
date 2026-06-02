@@ -769,6 +769,116 @@ textarea { resize: vertical; min-height: 120px; }
   box-shadow: 0 10px 32px rgba(37,211,102,0.45);
 }
 
+/* ─── SOCIAL MEDIA SECTION ───────────────────────── */
+.social-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+  margin-top: 40px;
+}
+
+.social-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--earth-stone);
+  padding: 36px 24px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: var(--transition);
+  color: var(--ink);
+  height: 100%;
+}
+
+.social-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-mid);
+  border-color: var(--earth-light);
+}
+
+.social-card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  transition: var(--transition);
+}
+
+/* Elegant platform themes matching the design system */
+.social-card-icon.instagram {
+  background: #fdf2f8;
+  color: #db2777;
+  border: 1px solid #fbcfe8;
+}
+.social-card:hover .social-card-icon.instagram {
+  background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+  color: var(--white);
+  border-color: transparent;
+}
+
+.social-card-icon.youtube {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+.social-card:hover .social-card-icon.youtube {
+  background: #dc2626;
+  color: var(--white);
+  border-color: transparent;
+}
+
+.social-card-icon.facebook {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+.social-card:hover .social-card-icon.facebook {
+  background: #2563eb;
+  color: var(--white);
+  border-color: transparent;
+}
+
+.social-card h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.35rem;
+  color: var(--green-deep);
+  margin-bottom: 8px;
+}
+
+.social-username {
+  font-size: 0.9rem;
+  color: var(--ink-light);
+  margin-bottom: 24px;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.social-btn {
+  margin-top: auto;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--green-mid);
+  background: var(--green-pale);
+  padding: 10px 24px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.social-card:hover .social-btn {
+  background: var(--green-mid);
+  color: var(--white);
+}
+
 /* ─── FOOTER ─────────────────────────────────────── */
 footer {
   background: var(--ink);
@@ -1077,135 +1187,3 @@ img {
 #lightbox-close:hover {
   color: var(--green-soft);
 }
-
-/* ─── STAY CONNECTED SECTION ──────────────────────── */
-.social-connect-section {
-  border-top: 1px solid var(--earth-stone);
-  text-align: center;
-}
-
-.social-connect-header {
-  margin-bottom: 48px;
-}
-
-.social-connect-header .section-label {
-  justify-content: center;
-}
-
-.social-connect-header .section-intro {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.social-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-top: 32px;
-}
-
-.social-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--card-bg);
-  border: 1px solid var(--earth-stone);
-  border-radius: var(--radius-md);
-  padding: 36px 24px;
-  text-decoration: none;
-  color: var(--ink);
-  box-shadow: var(--shadow-soft);
-  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-}
-
-.social-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-mid);
-}
-
-.social-card-icon {
-  font-size: 2.8rem;
-  margin-bottom: 18px;
-  transition: transform 0.3s ease;
-}
-
-.social-card:hover .social-card-icon {
-  transform: scale(1.15);
-}
-
-/* Platform Colors & Themes */
-.instagram-card .social-card-icon {
-  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285aeb 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.instagram-card:hover {
-  border-color: #d6249f;
-}
-
-.youtube-card .social-card-icon {
-  color: #ff0000;
-}
-.youtube-card:hover {
-  border-color: #ff0000;
-}
-
-.facebook-card .social-card-icon {
-  color: #1877f2;
-}
-.facebook-card:hover {
-  border-color: #1877f2;
-}
-
-.social-card-info {
-  margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.social-card-info .platform-name {
-  font-family: 'DM Serif Display', serif;
-  font-size: 1.4rem;
-  color: var(--green-deep);
-}
-
-.social-card-info .username {
-  font-size: 0.95rem;
-  color: var(--ink-light);
-  font-weight: 500;
-  word-break: break-all;
-}
-
-.social-card-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--green-mid);
-  padding: 10px 20px;
-  border: 1px solid var(--green-soft);
-  border-radius: 30px;
-  background: transparent;
-  transition: all 0.3s ease;
-}
-
-.social-card:hover .social-card-btn {
-  background: var(--green-mid);
-  color: var(--white);
-  border-color: var(--green-mid);
-}
-
-.social-card-btn i {
-  transition: transform 0.3s ease;
-}
-
-.social-card:hover .social-card-btn i {
-  transform: translateX(4px);
-}
-

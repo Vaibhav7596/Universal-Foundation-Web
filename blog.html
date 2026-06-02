@@ -97,6 +97,48 @@
       grid-column: 1 / -1;
       color: var(--ink-light);
     }
+    .pagination-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 48px;
+    }
+    .page-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--earth-stone);
+      color: var(--ink-mid);
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      user-select: none;
+    }
+    .page-btn:hover {
+      background: var(--green-pale);
+      color: var(--green-mid);
+      border-color: var(--green-soft);
+      transform: translateY(-2px);
+    }
+    .page-btn.active {
+      background: var(--green-mid);
+      color: var(--white);
+      border-color: var(--green-mid);
+    }
+    .page-btn.disabled {
+      background: var(--earth-sand);
+      color: var(--ink-light);
+      border-color: var(--earth-stone);
+      cursor: not-allowed;
+      transform: none;
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body>
@@ -142,6 +184,7 @@
         <p style="margin-top: 15px; color: var(--ink-light);">Loading stories...</p>
       </div>
     </div>
+    <div class="pagination-controls" id="pagination-container" data-aos="fade-up"></div>
   </div>
 </section>
 
@@ -159,14 +202,110 @@
 <script>AOS.init({ duration: 800, once: true, offset: 60 });</script>
 <script src="js/script.js"></script>
 <script>
-  // Page-specific hydration for blog.html
+  // Page-specific hydration and pagination for blog.html
   window.addEventListener('DOMContentLoaded', () => {
+    const pageSize = 6;
+    let currentPage = 1;
+    let allBlogs = [];
+
+    const container = document.getElementById('blogs-container');
+    const paginationContainer = document.getElementById('pagination-container');
+
+    function renderPage(page) {
+      if (!container) return;
+
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedBlogs = allBlogs.slice(startIndex, endIndex);
+
+      // Render Blogs
+      container.innerHTML = paginatedBlogs.map(blog => `
+        <div class="blog-card" data-aos="fade-up">
+          <div class="blog-img-wrap">
+            <img src="${blog.image}" alt="${blog.title}" loading="lazy">
+          </div>
+          <div class="blog-content-wrap">
+            <div class="blog-meta">
+              <span class="blog-category">${blog.category}</span>
+              <span class="blog-date">${blog.date}</span>
+            </div>
+            <h3>${blog.title}</h3>
+            <p>${blog.summary}</p>
+            <a href="blog-post.html?slug=${blog.slug}" class="btn btn-ghost" style="margin-top:auto; font-size:0.85rem; padding:9px 18px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+              Read Article <i class="fa fa-arrow-right" style="font-size:0.75rem;"></i>
+            </a>
+          </div>
+        </div>
+      `).join('');
+
+      // Render Pagination Buttons
+      renderPaginationControls();
+
+      // Trigger AOS refreshing so newly inserted cards fade in cleanly
+      if (window.AOS) {
+        window.AOS.refresh();
+      }
+    }
+
+    function renderPaginationControls() {
+      if (!paginationContainer) return;
+
+      const totalPages = Math.ceil(allBlogs.length / pageSize);
+      if (totalPages <= 1) {
+        paginationContainer.innerHTML = '';
+        return;
+      }
+
+      let html = '';
+
+      // Prev Button
+      html += `<button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" data-action="prev" ${currentPage === 1 ? 'disabled' : ''} aria-label="Previous Page"><i class="fa-solid fa-chevron-left"></i></button>`;
+
+      // Page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+      }
+
+      // Next Button
+      html += `<button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" data-action="next" ${currentPage === totalPages ? 'disabled' : ''} aria-label="Next Page"><i class="fa-solid fa-chevron-right"></i></button>`;
+
+      paginationContainer.innerHTML = html;
+
+      // Event Listeners
+      paginationContainer.querySelectorAll('.page-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.classList.contains('disabled') || btn.classList.contains('active')) return;
+
+          const action = btn.getAttribute('data-action');
+          const page = btn.getAttribute('data-page');
+
+          if (action === 'prev') {
+            currentPage = Math.max(1, currentPage - 1);
+          } else if (action === 'next') {
+            currentPage = Math.min(totalPages, currentPage + 1);
+          } else if (page) {
+            currentPage = parseInt(page, 10);
+          }
+
+          renderPage(currentPage);
+
+          // Smooth scroll to top of blogs section
+          const target = document.querySelector('.blogs-grid');
+          if (target) {
+            const yOffset = -120; // offset for sticky/fixed header
+            const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+        });
+      });
+    }
+
+    // Fetch Articles from server
     fetch('/api/public/blogs')
       .then(res => res.json())
       .then(blogs => {
-        const container = document.getElementById('blogs-container');
         if (!container) return;
-        
+
         if (!blogs || blogs.length === 0) {
           container.innerHTML = `
             <div class="no-blogs">
@@ -175,33 +314,15 @@
               <p>Check back soon. Our admin staff is writing insightful updates from our upcoming field operations!</p>
             </div>
           `;
+          if (paginationContainer) paginationContainer.innerHTML = '';
           return;
         }
 
-        container.innerHTML = blogs.map(blog => {
-          return `
-            <div class="blog-card" data-aos="fade-up">
-              <div class="blog-img-wrap">
-                <img src="${blog.image}" alt="${blog.title}" loading="lazy">
-              </div>
-              <div class="blog-content-wrap">
-                <div class="blog-meta">
-                  <span class="blog-category">${blog.category}</span>
-                  <span class="blog-date">${blog.date}</span>
-                </div>
-                <h3>${blog.title}</h3>
-                <p>${blog.summary}</p>
-                <a href="blog-post.html?slug=${blog.slug}" class="btn btn-ghost" style="margin-top:auto; font-size:0.85rem; padding:9px 18px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
-                  Read Article <i class="fa fa-arrow-right" style="font-size:0.75rem;"></i>
-                </a>
-              </div>
-            </div>
-          `;
-        }).join('');
+        allBlogs = blogs; // Blogs are already sorted by the backend
+        renderPage(1);
       })
       .catch(err => {
         console.error('Error fetching blogs:', err);
-        const container = document.getElementById('blogs-container');
         if (container) {
           container.innerHTML = `
             <div class="no-blogs" style="background:#fce8e6; color:#a94442; border-color:#ebccd1;">
