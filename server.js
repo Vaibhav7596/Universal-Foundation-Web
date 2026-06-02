@@ -399,9 +399,9 @@ app.get('/api/public/events', (req, res) => {
     const timeA = parseDate(a.date);
     const timeB = parseDate(b.date);
     if (timeA !== timeB) {
-      return timeB - timeA;
+      return timeA - timeB; // Earliest upcoming event first
     }
-    return getTimestampFromId(b.id) - getTimestampFromId(a.id);
+    return getTimestampFromId(a.id) - getTimestampFromId(b.id);
   });
 
   res.json(sortedEvents);
