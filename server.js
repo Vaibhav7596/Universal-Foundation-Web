@@ -226,15 +226,27 @@ Admin Password: ${defaultPassword}
     }
   }
 
-  // Ensure donation settings exist in the active loaded configuration
+  // Ensure donation settings exist in the active loaded configuration.
+  // SAFE: Only patch the missing field using $set — never do a full replaceOne here
+  // to avoid accidentally overwriting real blog/event data with incomplete state.
   if (dbCache && dbCache.settings && !dbCache.settings.donation) {
-    console.log("Setting default donation settings in configuration cache...");
+    console.log("Adding missing donation defaults to in-memory cache...");
     dbCache.settings.donation = {
       message: "Your contribution helps us continue our mission of saving lives and building resilient communities.",
       upiId: "hellouniversalfoundation@oksbi",
       qrImage: "images/Qr.jpeg"
     };
-    writeDb(dbCache);
+    // Patch ONLY this field in MongoDB — do NOT replace the full document
+    if (mongoCol) {
+      mongoCol.updateOne(
+        { _id: "site_state" },
+        { $set: { "settings.donation": dbCache.settings.donation } },
+        { upsert: false }
+      ).then(() => console.log("✅ Donation defaults patched in MongoDB Atlas."))
+       .catch(err => console.error("⚠️ Could not patch donation defaults in MongoDB:", err));
+    }
+    // Also update local backup file
+    try { fs.writeFileSync(dbPath, JSON.stringify(dbCache, null, 2)); } catch (_) {}
   }
 }
 
