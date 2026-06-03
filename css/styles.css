@@ -910,7 +910,7 @@ footer p { font-size: 0.88rem; }
 .page-header {
   background: linear-gradient(160deg, var(--green-deep), #2a5040);
   color: var(--white);
-  padding: 72px 60px 60px;
+  padding: 110px 60px 60px; /* Increased top padding to clear the 68px fixed header with spacing */
 }
 
 .page-header .section-label { color: var(--green-soft); }
@@ -1021,7 +1021,7 @@ footer p { font-size: 0.88rem; }
 
   footer { padding: 36px 24px; flex-direction: column; text-align: center; }
 
-  .page-header { padding: 60px 24px 48px; }
+  .page-header { padding: 100px 24px 48px; } /* Increased top padding to clear the 68px fixed header on mobile */
 }
 
 @media (max-width: 480px) {
