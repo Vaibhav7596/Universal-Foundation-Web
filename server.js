@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 const dataDir = path.join(__dirname, 'data');
 const uploadsDir = path.join(__dirname, 'uploads');
 const dbPath = path.join(dataDir, 'db.json');
+const sessionsPath = path.join(dataDir, 'sessions.json'); // Separate file — never synced to MongoDB
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir);
@@ -425,18 +426,27 @@ function getCookies(req) {
 }
 
 // ─── PERSISTENT SESSION HELPERS ─────────────────────────────
-// Sessions are stored inside db.json so they survive server restarts
-// (important on Render free tier which restarts the dyno on inactivity)
+// Sessions are stored in a SEPARATE file (data/sessions.json).
+// They must NEVER be written to MongoDB via writeDb() to avoid
+// overwriting blog/event data in Atlas on every auth request.
 
 function getSessions() {
-  const db = readDb();
-  return db.sessions || {};
+  try {
+    if (fs.existsSync(sessionsPath)) {
+      return JSON.parse(fs.readFileSync(sessionsPath, 'utf8'));
+    }
+  } catch (e) {
+    console.error('[sessions] Failed to read sessions.json:', e);
+  }
+  return {};
 }
 
 function saveSessions(sessions) {
-  const db = readDb();
-  db.sessions = sessions;
-  writeDb(db);
+  try {
+    fs.writeFileSync(sessionsPath, JSON.stringify(sessions, null, 2));
+  } catch (e) {
+    console.error('[sessions] Failed to write sessions.json:', e);
+  }
 }
 
 function purgeExpiredSessions() {
