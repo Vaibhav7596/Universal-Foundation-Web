@@ -5,6 +5,16 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { MongoClient } = require('mongodb');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// ─── CLOUDINARY CONFIGURATION ───────────────────────────────
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dupqeboy3',
+  api_key: process.env.CLOUDINARY_API_KEY || '529594381877661',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'Dq4dK1m-2KE0GBuJX8NRzs630EU'
+});
+console.log(`[cloudinary] Configured for cloud: ${cloudinary.config().cloud_name}`);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -489,30 +499,28 @@ function requireAdmin(req, res, next) {
   res.status(401).json({ error: 'Unauthorized: Invalid or expired session. Please log in again.' });
 }
 
-// ─── FILE UPLOAD STORAGE CONFIGURATION ──────────────────────
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+// ─── FILE UPLOAD STORAGE CONFIGURATION (Cloudinary) ────────────────
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'universal-foundation',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    transformation: [{ quality: 'auto', fetch_format: 'auto' }]
   }
 });
 
 const upload = multer({
-  storage: storage,
+  storage: cloudinaryStorage,
   fileFilter: function (req, file, cb) {
     const filetypes = /jpeg|jpg|png|webp|gif/;
     const mimetype = filetypes.test(file.mimetype);
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    
     if (mimetype && extname) {
       return cb(null, true);
     }
     cb(new Error('Only images (jpg, png, webp, gif) are allowed!'));
   },
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
 // ─── AUTHENTICATION ROUTES ──────────────────────────────────
@@ -833,7 +841,7 @@ app.post('/api/admin/blogs', requireAdmin, upload.single('coverImage'), (req, re
   // Create cover image path
   let imagePath = 'images/index1.jpeg'; // default fallback
   if (req.file) {
-    imagePath = 'uploads/' + req.file.filename;
+    imagePath = req.file.path; // Cloudinary URL
   }
 
   // Generate slug
@@ -866,26 +874,16 @@ app.put('/api/admin/blogs/:id', requireAdmin, upload.single('coverImage'), (req,
 
   const db = readDb();
   const blogIndex = db.blogs.findIndex(b => b.id === blogId);
-  
+
   if (blogIndex === -1) {
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
     return res.status(404).json({ error: 'Blog post not found' });
   }
 
   const post = db.blogs[blogIndex];
-  let imagePath = post.image;
 
+  let newImagePath = post.image;
   if (req.file) {
-    // Delete previous cover image if it was custom uploaded
-    if (post.image.startsWith('uploads/')) {
-      const prevPath = path.join(__dirname, post.image);
-      if (fs.existsSync(prevPath)) {
-        fs.unlinkSync(prevPath);
-      }
-    }
-    imagePath = 'uploads/' + req.file.filename;
+    newImagePath = req.file.path; // Cloudinary URL
   }
 
   const newSlug = title ? title.toLowerCase()
@@ -900,7 +898,7 @@ app.put('/api/admin/blogs/:id', requireAdmin, upload.single('coverImage'), (req,
     date: date || post.date,
     summary: summary || post.summary,
     content: content || post.content,
-    image: imagePath
+    image: newImagePath
   };
 
   writeDb(db);
@@ -917,14 +915,6 @@ app.delete('/api/admin/blogs/:id', requireAdmin, (req, res) => {
     return res.status(404).json({ error: 'Blog post not found' });
   }
 
-  // Delete cover image file if custom uploaded
-  if (post.image.startsWith('uploads/')) {
-    const imagePath = path.join(__dirname, post.image);
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
-    }
-  }
-
   db.blogs = db.blogs.filter(b => b.id !== blogId);
   writeDb(db);
   res.json({ success: true, message: 'Blog post deleted successfully' });
@@ -934,9 +924,6 @@ app.delete('/api/admin/blogs/:id', requireAdmin, (req, res) => {
 app.post('/api/admin/gallery', requireAdmin, upload.single('galleryImage'), (req, res) => {
   const db = readDb();
   if (db.gallery && db.gallery.length >= 9) {
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
     return res.status(400).json({ error: 'Maximum 9 images allowed. Please delete an existing image before uploading a new one.' });
   }
 
@@ -944,7 +931,7 @@ app.post('/api/admin/gallery', requireAdmin, upload.single('galleryImage'), (req
     return res.status(400).json({ error: 'No image file uploaded' });
   }
 
-  const imagePath = 'uploads/' + req.file.filename;
+  const imagePath = req.file.path; // Cloudinary URL
   
   db.gallery.push(imagePath);
   writeDb(db);
@@ -965,14 +952,6 @@ app.delete('/api/admin/gallery', requireAdmin, (req, res) => {
 
   if (db.gallery.length === initialLength) {
     return res.status(404).json({ error: 'Image not found in gallery database' });
-  }
-
-  // Delete physical file if custom uploaded
-  if (imagePath.startsWith('uploads/')) {
-    const fileAbsPath = path.join(__dirname, imagePath);
-    if (fs.existsSync(fileAbsPath)) {
-      fs.unlinkSync(fileAbsPath);
-    }
   }
 
   writeDb(db);
@@ -997,11 +976,7 @@ app.post('/api/admin/donation', requireAdmin, upload.single('qrImage'), (req, re
   if (upiId) db.settings.donation.upiId = upiId;
   
   if (req.file) {
-    if (db.settings.donation.qrImage && db.settings.donation.qrImage.startsWith('uploads/')) {
-      const prevPath = path.join(__dirname, db.settings.donation.qrImage);
-      if (fs.existsSync(prevPath)) fs.unlinkSync(prevPath);
-    }
-    db.settings.donation.qrImage = 'uploads/' + req.file.filename;
+    db.settings.donation.qrImage = req.file.path; // Cloudinary URL
   }
   
   writeDb(db);
@@ -1022,7 +997,7 @@ app.post('/api/admin/impact-gallery', requireAdmin, upload.array('images', 10), 
   const db = readDb();
   if (!db.impactGallery) db.impactGallery = [];
   
-  const imagePaths = req.files ? req.files.map(f => 'uploads/' + f.filename) : [];
+  const imagePaths = req.files ? req.files.map(f => f.path) : []; // Cloudinary URLs
   
   if (id) {
     const idx = db.impactGallery.findIndex(i => i.id === id);
