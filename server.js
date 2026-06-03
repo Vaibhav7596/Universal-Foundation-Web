@@ -195,12 +195,18 @@ async function initDatabase() {
   };
 
   if (mongoUri) {
-    console.log("MongoDB Connection String provided. Initializing connection to MongoDB Atlas...");
+    const redactMongoUri = (uri) => {
+      if (!uri) return 'undefined';
+      return uri.replace(/:([^:@]+)@/, ':******@');
+    };
+    console.log(`[initDatabase] MONGODB_URI provided. Connecting to: ${redactMongoUri(mongoUri)}`);
     try {
       mongoClient = new MongoClient(mongoUri);
       await mongoClient.connect();
+      console.log("[initDatabase] MongoDB connection established successfully.");
       const db = mongoClient.db("universal_foundation");
       mongoCol = db.collection("cms_store");
+      console.log(`[initDatabase] Using database: "${db.databaseName}", collection: "${mongoCol.collectionName}"`);
       
       const doc = await mongoCol.findOne({ _id: "site_state" });
       if (doc) {
@@ -363,27 +369,32 @@ function readDb() {
 
 // Helper to write DB
 function writeDb(data) {
-  console.log("Database update triggered. mongoCol is:", mongoCol ? "connected" : "null/offline");
+  console.log(`[writeDb] Triggered. mongoCol: ${mongoCol ? "connected" : "null/offline"}`);
   dbCache = data;
   
   // Write to local cache file
   try {
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+    console.log(`[writeDb] Local backup successfully updated at ${dbPath}`);
   } catch (err) {
-    console.error("Failed to write local backup:", err);
+    console.error("[writeDb] Failed to write local backup:", err);
   }
 
   // Asynchronously save to MongoDB if connected
   if (mongoCol) {
     const docToSave = { _id: "site_state", ...data };
-    console.log("Sending replaceOne to MongoDB Atlas for _id: site_state...");
+    console.log(`[writeDb] Syncing to MongoDB Atlas (_id: site_state). Summary: ${data.blogs ? data.blogs.length : 0} blogs, ${data.events ? data.events.length : 0} events, ${data.gallery ? data.gallery.length : 0} gallery items.`);
+    
     mongoCol.replaceOne({ _id: "site_state" }, docToSave, { upsert: true })
       .then(result => {
-        console.log(`✅ MongoDB Atlas sync successful. (Matched: ${result.matchedCount}, Modified: ${result.modifiedCount}, Upserted: ${result.upsertedCount})`);
+        console.log(`✅ [writeDb] MongoDB Atlas sync successful.`);
+        console.log(`Matched: ${result.matchedCount}, Modified: ${result.modifiedCount}, Upserted: ${result.upsertedCount}, Acknowledged: ${result.acknowledged}`);
       })
       .catch(err => {
-        console.error("❌ Async write to MongoDB Atlas failed:", err);
+        console.error("❌ [writeDb] Async write to MongoDB Atlas failed:", err);
       });
+  } else {
+    console.warn("⚠️ [writeDb] Sync skipped: mongoCol is offline/null.");
   }
 }
 
@@ -1107,6 +1118,26 @@ app.get('/sitemap.xml', (req, res) => {
 
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.send(xml);
+});
+
+// Database status debugging endpoint
+app.get('/api/public/db-status', (req, res) => {
+  res.json({
+    mongoConnected: !!mongoCol,
+    mongoCollectionName: mongoCol ? mongoCol.collectionName : null,
+    dbPathExists: fs.existsSync(dbPath),
+    cacheStats: {
+      hasBlogs: Array.isArray(dbCache.blogs),
+      blogsCount: dbCache.blogs ? dbCache.blogs.length : 0,
+      hasEvents: Array.isArray(dbCache.events),
+      eventsCount: dbCache.events ? dbCache.events.length : 0,
+      hasGallery: Array.isArray(dbCache.gallery),
+      galleryCount: dbCache.gallery ? dbCache.gallery.length : 0,
+      hasImpactGallery: Array.isArray(dbCache.impactGallery),
+      impactGalleryCount: dbCache.impactGallery ? dbCache.impactGallery.length : 0,
+      settingsKeys: dbCache.settings ? Object.keys(dbCache.settings) : []
+    }
+  });
 });
 
 // Serve robots.txt
