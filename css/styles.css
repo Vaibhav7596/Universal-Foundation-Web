@@ -34,6 +34,7 @@ body {
   color: var(--ink);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 body.loading { overflow: hidden; }
@@ -660,6 +661,10 @@ nav a.active {
   align-items: flex-start;
 }
 
+.contact-item > div:last-child {
+  min-width: 0;
+}
+
 .contact-icon {
   width: 44px;
   height: 44px;
@@ -685,6 +690,8 @@ nav a.active {
   color: var(--ink-mid);
   text-decoration: none;
   font-size: 0.95rem;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 .contact-item a:hover { color: var(--green-mid); }
 
@@ -910,7 +917,7 @@ footer p { font-size: 0.88rem; }
 .page-header {
   background: linear-gradient(160deg, var(--green-deep), #2a5040);
   color: var(--white);
-  padding: 110px 60px 60px; /* Increased top padding to clear the 68px fixed header with spacing */
+  padding: 72px 60px 60px;
 }
 
 .page-header .section-label { color: var(--green-soft); }
@@ -1021,7 +1028,8 @@ footer p { font-size: 0.88rem; }
 
   footer { padding: 36px 24px; flex-direction: column; text-align: center; }
 
-  .page-header { padding: 100px 24px 48px; } /* Increased top padding to clear the 68px fixed header on mobile */
+  .page-header { padding: 60px 24px 48px; }
+  .form-card { padding: 24px; }
 }
 
 @media (max-width: 480px) {
