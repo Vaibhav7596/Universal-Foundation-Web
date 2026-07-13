@@ -635,14 +635,68 @@ app.get('/api/public/settings', (req, res) => {
   res.json(db.settings);
 });
 
-// Get Upcoming Events (Sorted by Date Descending, Newest First)
+// Helper: parse an event date string and return the last millisecond it is "active".
+// - Full dates like "10 June 2026" or "15-07-2026" expire at end of that calendar day.
+// - Month-only dates like "July 2026" expire at the very end of that month.
+// Returns null if the date cannot be parsed.
+function getEventEndTimestamp(dStr) {
+  if (!dStr) return null;
+  const cleaned = dStr.trim();
+
+  // Try DD-MM-YYYY or DD/MM/YYYY
+  const matchDmy = cleaned.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (matchDmy) {
+    const d = new Date(parseInt(matchDmy[3], 10), parseInt(matchDmy[2], 10) - 1, parseInt(matchDmy[1], 10), 23, 59, 59, 999);
+    return isNaN(d.getTime()) ? null : d.getTime();
+  }
+
+  // Try YYYY-MM-DD
+  const matchYmd = cleaned.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (matchYmd) {
+    const d = new Date(parseInt(matchYmd[1], 10), parseInt(matchYmd[2], 10) - 1, parseInt(matchYmd[3], 10), 23, 59, 59, 999);
+    return isNaN(d.getTime()) ? null : d.getTime();
+  }
+
+  // Try natural-language parsing (e.g. "10 June 2026", "July 2026")
+  const d = new Date(cleaned);
+  if (isNaN(d.getTime())) return null;
+
+  // If the original string contains a specific day number (1-31) treat it as a full date
+  const hasSpecificDay = /\b([1-9]|[12]\d|3[01])\b/.test(cleaned);
+  if (hasSpecificDay) {
+    d.setHours(23, 59, 59, 999);
+    return d.getTime();
+  }
+
+  // Month-only: expire at the very end of that month
+  const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1, 0, 0, 0, 0);
+  return endOfMonth.getTime() - 1;
+}
+
+// Get Upcoming Events — auto-removes past events, then sorts earliest-first
 app.get('/api/public/events', (req, res) => {
   const db = readDb();
 
-  const parseDate = (dStr) => {
-    const d = new Date(dStr);
-    return isNaN(d.getTime()) ? 0 : d.getTime();
-  };
+  const now = Date.now();
+
+  // Separate expired events from upcoming ones
+  const expiredIds = [];
+  const upcomingEvents = db.events.filter(event => {
+    const endTs = getEventEndTimestamp(event.date);
+    if (endTs === null) return true; // Keep events with unparseable dates
+    if (endTs < now) {
+      expiredIds.push(event.id);
+      return false;
+    }
+    return true;
+  });
+
+  // If any events expired, persist the pruned list
+  if (expiredIds.length > 0) {
+    console.log(`[events] Auto-removing ${expiredIds.length} expired event(s): ${expiredIds.join(', ')}`);
+    db.events = upcomingEvents;
+    writeDb(db);
+  }
 
   const getTimestampFromId = (id) => {
     if (typeof id === 'string' && id.startsWith('event-')) {
@@ -652,12 +706,10 @@ app.get('/api/public/events', (req, res) => {
     return 0;
   };
 
-  const sortedEvents = [...db.events].sort((a, b) => {
-    const timeA = parseDate(a.date);
-    const timeB = parseDate(b.date);
-    if (timeA !== timeB) {
-      return timeA - timeB; // Earliest upcoming event first
-    }
+  const sortedEvents = [...upcomingEvents].sort((a, b) => {
+    const tsA = getEventEndTimestamp(a.date) || 0;
+    const tsB = getEventEndTimestamp(b.date) || 0;
+    if (tsA !== tsB) return tsA - tsB; // Earliest first
     return getTimestampFromId(a.id) - getTimestampFromId(b.id);
   });
 
