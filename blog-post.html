@@ -3,7 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loading Article... — Universal Foundation</title>
+  <!-- DYNAMIC_OG_META_START -->
+  <title>Universal Foundation — Blog Stories & Field Updates</title>
+  <meta name="title" content="Universal Foundation — Blog Stories & Field Updates">
+  <meta name="description" content="Discover inspiring stories, field updates, disaster response insights, and community initiatives from Universal Foundation.">
+  <link rel="canonical" href="https://universalfoundationindia.com/blog.html">
+
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Universal Foundation">
+  <meta property="og:url" content="https://universalfoundationindia.com/blog.html">
+  <meta property="og:title" content="Universal Foundation — Blog Stories & Field Updates">
+  <meta property="og:description" content="Discover inspiring stories, field updates, disaster response insights, and community initiatives from Universal Foundation.">
+  <meta property="og:image" content="https://universalfoundationindia.com/images/logo.jpeg">
+  <meta property="og:image:secure_url" content="https://universalfoundationindia.com/images/logo.jpeg">
+  <meta property="og:image:alt" content="Universal Foundation">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://universalfoundationindia.com/blog.html">
+  <meta name="twitter:title" content="Universal Foundation — Blog Stories & Field Updates">
+  <meta name="twitter:description" content="Discover inspiring stories, field updates, disaster response insights, and community initiatives from Universal Foundation.">
+  <meta name="twitter:image" content="https://universalfoundationindia.com/images/logo.jpeg">
+  <!-- DYNAMIC_OG_META_END -->
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -168,6 +192,9 @@
     .share-wa { background: #25D366; }
     .share-fb { background: #1877F2; }
     .share-tw { background: #1DA1F2; }
+    .share-li { background: #0A66C2; }
+    .share-copy { background: var(--green-deep); border: none; cursor: pointer; }
+    .share-copy.copied { background: #10b981; }
     
     .error-wrap {
       text-align: center;
@@ -237,9 +264,15 @@
 <script src="js/script.js"></script>
 <script>
   window.addEventListener('DOMContentLoaded', () => {
-    // Parse slug/id from query params
+    // Parse slug/id from query params or pathname
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get('slug') || params.get('id');
+    let slug = params.get('slug') || params.get('id');
+    if (!slug) {
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      if ((parts[0] === 'blog' || parts[0] === 'blog-post') && parts[1]) {
+        slug = parts[1];
+      }
+    }
     
     const pageContainer = document.getElementById('article-page-container');
     if (!pageContainer) return;
@@ -248,71 +281,107 @@
       renderError("No Article Specified", "Please navigate back to the blog list and select an article to read.");
       return;
     }
-    
-    // Fetch detailed article
-    fetch(`/api/public/blogs/${slug}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Article not found");
-        return res.json();
-      })
-      .then(blog => {
-        document.title = `${blog.title} — Universal Foundation`;
+
+    function renderArticle(blog) {
+      document.title = `${blog.title} — Universal Foundation`;
+      
+      // Build dynamic share links using canonical URL with slug
+      const canonicalUrl = `${window.location.origin}/blog-post.html?slug=${encodeURIComponent(blog.slug || blog.id)}`;
+      const shareUrl = encodeURIComponent(canonicalUrl);
+      const shareText = encodeURIComponent(`Check out this story from Universal Foundation: ${blog.title}`);
+      
+      pageContainer.innerHTML = `
+        <!-- ARTICLE BANNER -->
+        <div class="article-hero" data-aos="fade-down">
+          <img class="article-hero-bg" src="${blog.image}" alt="${blog.title}">
+          <div class="article-hero-content">
+            <div class="article-meta-top">
+              <span class="article-category">${blog.category}</span>
+              <span class="article-date">${blog.date}</span>
+            </div>
+            <h1>${blog.title}</h1>
+          </div>
+        </div>
         
-        // Build dynamic share links
-        const shareUrl = encodeURIComponent(window.location.href);
-        const shareText = encodeURIComponent(`Check out this story from Universal Foundation: ${blog.title}`);
-        
-        pageContainer.innerHTML = `
-          <!-- ARTICLE BANNER -->
-          <div class="article-hero" data-aos="fade-down">
-            <img class="article-hero-bg" src="${blog.image}" alt="${blog.title}">
-            <div class="article-hero-content">
-              <div class="article-meta-top">
-                <span class="article-category">${blog.category}</span>
-                <span class="article-date">${blog.date}</span>
+        <!-- ARTICLE CONTENT -->
+        <article class="container" style="position:relative;" data-aos="fade-up">
+          <div class="article-wrap">
+            <div class="article-body">
+              ${blog.content}
+            </div>
+            
+            <div class="article-footer">
+              <a href="blog.html" class="btn btn-ghost" style="font-size:0.85rem; padding:10px 20px; display:inline-flex; align-items:center; gap:8px;">
+                <i class="fa fa-arrow-left" style="font-size:0.75rem;"></i> Back to Blog
+              </a>
+              
+              <div class="article-share">
+                <span class="article-share-label">Share:</span>
+                <a href="https://wa.me/?text=${shareText}%20${shareUrl}" target="_blank" class="share-btn share-wa" aria-label="Share on WhatsApp" title="Share on WhatsApp">
+                  <i class="fa-brands fa-whatsapp"></i>
+                </a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank" class="share-btn share-li" aria-label="Share on LinkedIn" title="Share on LinkedIn">
+                  <i class="fa-brands fa-linkedin-in"></i>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank" class="share-btn share-fb" aria-label="Share on Facebook" title="Share on Facebook">
+                  <i class="fa-brands fa-facebook-f"></i>
+                </a>
+                <a href="https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}" target="_blank" class="share-btn share-tw" aria-label="Share on Twitter" title="Share on Twitter">
+                  <i class="fa-brands fa-twitter"></i>
+                </a>
+                <button type="button" class="share-btn share-copy" id="btn-copy-link" aria-label="Copy Blog Link" title="Copy Blog Link">
+                  <i class="fa-solid fa-link" id="copy-icon"></i>
+                </button>
               </div>
-              <h1>${blog.title}</h1>
             </div>
           </div>
-          
-          <!-- ARTICLE CONTENT -->
-          <article class="container" style="position:relative;" data-aos="fade-up">
-            <div class="article-wrap">
-              <div class="article-body">
-                ${blog.content}
-              </div>
-              
-              <div class="article-footer">
-                <a href="blog.html" class="btn btn-ghost" style="font-size:0.85rem; padding:10px 20px; display:inline-flex; align-items:center; gap:8px;">
-                  <i class="fa fa-arrow-left" style="font-size:0.75rem;"></i> Back to Blog
-                </a>
-                
-                <div class="article-share">
-                  <span class="article-share-label">Share This:</span>
-                  <a href="https://wa.me/?text=${shareText}%20${shareUrl}" target="_blank" class="share-btn share-wa" aria-label="Share on WhatsApp">
-                    <i class="fa-brands fa-whatsapp"></i>
-                  </a>
-                  <a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank" class="share-btn share-fb" aria-label="Share on Facebook">
-                    <i class="fa-brands fa-facebook-f"></i>
-                  </a>
-                  <a href="https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}" target="_blank" class="share-btn share-tw" aria-label="Share on Twitter">
-                    <i class="fa-brands fa-twitter"></i>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </article>
-        `;
-        
-        // Re-initialize AOS for fresh markup
-        if (typeof AOS !== 'undefined') {
-          AOS.refresh();
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching blog post:', err);
-        renderError("Article Not Found", "The article you are trying to view does not exist or has been deleted by our site administrator.");
-      });
+        </article>
+      `;
+
+      // Copy Link button event listener
+      const copyBtn = document.getElementById('btn-copy-link');
+      const copyIcon = document.getElementById('copy-icon');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(canonicalUrl).then(() => {
+              copyBtn.classList.add('copied');
+              if (copyIcon) copyIcon.className = 'fa-solid fa-check';
+              setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                if (copyIcon) copyIcon.className = 'fa-solid fa-link';
+              }, 2000);
+            }).catch(() => {
+              prompt('Copy this link:', canonicalUrl);
+            });
+          } else {
+            prompt('Copy this link:', canonicalUrl);
+          }
+        });
+      }
+      
+      // Re-initialize AOS for fresh markup
+      if (typeof AOS !== 'undefined') {
+        AOS.refresh();
+      }
+    }
+    
+    // Check if initial blog data was pre-injected server-side
+    if (window.__INITIAL_BLOG__ && (window.__INITIAL_BLOG__.slug === slug || window.__INITIAL_BLOG__.id === slug)) {
+      renderArticle(window.__INITIAL_BLOG__);
+    } else {
+      // Fetch detailed article
+      fetch(`/api/public/blogs/${slug}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Article not found");
+          return res.json();
+        })
+        .then(blog => renderArticle(blog))
+        .catch(err => {
+          console.error('Error fetching blog post:', err);
+          renderError("Article Not Found", "The article you are trying to view does not exist or has been deleted by our site administrator.");
+        });
+    }
       
     function renderError(title, msg) {
       document.title = `Article Not Found — Universal Foundation`;

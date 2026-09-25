@@ -3,7 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog & Stories â€” Universal Foundation</title>
+  <title>Blog & Stories — Universal Foundation</title>
+  <meta name="description" content="Read our latest stories, volunteer field reports, disaster preparedness insights, and environmental drives from Universal Foundation.">
+  <link rel="canonical" href="https://universalfoundationindia.com/blog.html">
+
+  <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Universal Foundation">
+  <meta property="og:url" content="https://universalfoundationindia.com/blog.html">
+  <meta property="og:title" content="Blog & Stories — Universal Foundation">
+  <meta property="og:description" content="Read our latest stories, volunteer field reports, disaster preparedness insights, and environmental drives from Universal Foundation.">
+  <meta property="og:image" content="https://universalfoundationindia.com/images/logo.jpeg">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://universalfoundationindia.com/blog.html">
+  <meta name="twitter:title" content="Blog & Stories — Universal Foundation">
+  <meta name="twitter:description" content="Read our latest stories, volunteer field reports, disaster preparedness insights, and environmental drives from Universal Foundation.">
+  <meta name="twitter:image" content="https://universalfoundationindia.com/images/logo.jpeg">
   <link rel="icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -191,9 +208,14 @@
                 </div>
                 <h3>${blog.title}</h3>
                 <p>${blog.summary}</p>
-                <a href="blog-post.html?slug=${blog.slug}" class="btn btn-ghost" style="margin-top:auto; font-size:0.85rem; padding:9px 18px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
-                  Read Article <i class="fa fa-arrow-right" style="font-size:0.75rem;"></i>
-                </a>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:auto;">
+                  <a href="blog-post.html?slug=${blog.slug}" class="btn btn-ghost" style="flex:1; font-size:0.85rem; padding:9px 18px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+                    Read Article <i class="fa fa-arrow-right" style="font-size:0.75rem;"></i>
+                  </a>
+                  <button type="button" class="btn btn-ghost" onclick="shareBlogCard('${encodeURIComponent(blog.title)}', '${encodeURIComponent(blog.slug || blog.id)}', event)" title="Share Article" aria-label="Share Article" style="padding:9px 14px; font-size:0.9rem; border-color:var(--earth-stone); display:inline-flex; align-items:center; justify-content:center;">
+                    <i class="fa-solid fa-share-nodes"></i>
+                  </button>
+                </div>
               </div>
             </div>
           `;
@@ -212,6 +234,31 @@
         }
       });
   });
+
+  window.shareBlogCard = function(encodedTitle, encodedSlug, event) {
+    if (event) event.preventDefault();
+    const title = decodeURIComponent(encodedTitle);
+    const slug = decodeURIComponent(encodedSlug);
+    const url = `${window.location.origin}/blog-post.html?slug=${encodeURIComponent(slug)}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `${title} — Universal Foundation`,
+        text: `Check out this story from Universal Foundation: ${title}`,
+        url: url
+      }).catch(err => {
+        if (err.name !== 'AbortError') console.warn('Share error:', err);
+      });
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Article link copied to clipboard!');
+      }).catch(() => {
+        prompt('Copy article link:', url);
+      });
+    } else {
+      prompt('Copy article link:', url);
+    }
+  };
 </script>
 </body>
 </html>

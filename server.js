@@ -1209,6 +1209,125 @@ Object.entries(faviconFiles).forEach(([route, file]) => {
   });
 });
 
+// ─── DYNAMIC BLOG POST OPEN GRAPH & SEO SSR INJECTION ──────────
+function escapeHtmlAttr(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function stripHtmlTags(str) {
+  if (!str) return '';
+  return String(str).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function getAbsoluteImageUrl(imgUrl, baseUrl) {
+  if (!imgUrl) return `${baseUrl}/images/logo.jpeg`;
+  if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
+    return imgUrl;
+  }
+  const cleanPath = imgUrl.startsWith('/') ? imgUrl : `/${imgUrl}`;
+  return `${baseUrl}${cleanPath}`;
+}
+
+function injectBlogMetaTags(templateHtml, blog, baseUrl, pagePath) {
+  const title = escapeHtmlAttr(blog.title || 'Universal Foundation Blog');
+  const rawExcerpt = blog.summary || stripHtmlTags(blog.content) || 'Empowering communities through disaster preparedness, environmental action, and life-saving education across India.';
+  const excerpt = escapeHtmlAttr(rawExcerpt.slice(0, 240));
+  const imageUrl = escapeHtmlAttr(getAbsoluteImageUrl(blog.image, baseUrl));
+  const fullPageUrl = escapeHtmlAttr(`${baseUrl}${pagePath}`);
+
+  const dynamicMetaTags = `
+  <!-- DYNAMIC_OG_META_START -->
+  <!-- Dynamic Open Graph & Twitter Meta Tags for: ${title} -->
+  <title>${title} — Universal Foundation</title>
+  <meta name="title" content="${title} — Universal Foundation">
+  <meta name="description" content="${excerpt}">
+  <link rel="canonical" href="${fullPageUrl}">
+
+  <!-- Open Graph / WhatsApp / Facebook / LinkedIn -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Universal Foundation">
+  <meta property="og:url" content="${fullPageUrl}">
+  <meta property="og:title" content="${title}">
+  <meta property="og:description" content="${excerpt}">
+  <meta property="og:image" content="${imageUrl}">
+  <meta property="og:image:secure_url" content="${imageUrl}">
+  <meta property="og:image:alt" content="${title}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="${fullPageUrl}">
+  <meta name="twitter:title" content="${title}">
+  <meta name="twitter:description" content="${excerpt}">
+  <meta name="twitter:image" content="${imageUrl}">
+
+  <!-- Pre-injected SSR blog data for instantaneous client rendering -->
+  <script>window.__INITIAL_BLOG__ = ${JSON.stringify(blog)};</script>
+  <!-- DYNAMIC_OG_META_END -->`;
+
+  if (templateHtml.includes('<!-- DYNAMIC_OG_META_START -->')) {
+    return templateHtml.replace(
+      /<!-- DYNAMIC_OG_META_START -->[\s\S]*?<!-- DYNAMIC_OG_META_END -->/,
+      dynamicMetaTags.trim()
+    );
+  }
+
+  // Fallback: replace existing <title> and inject into <head>
+  let html = templateHtml.replace(/<title>.*?<\/title>/i, '');
+  if (/<head[^>]*>/i.test(html)) {
+    return html.replace(/(<head[^>]*>)/i, `$1\n${dynamicMetaTags}`);
+  }
+  return dynamicMetaTags + '\n' + html;
+}
+
+// Intercept blog post requests to inject dynamic Open Graph meta tags for social media previews
+app.get(['/blog-post.html', '/blog/:slug', '/blog-post/:slug'], (req, res, next) => {
+  const slug = req.query.slug || req.query.id || req.params.slug;
+  if (!slug) {
+    return next();
+  }
+
+  const db = readDb();
+  if (!db || !Array.isArray(db.blogs)) {
+    return next();
+  }
+
+  const blog = db.blogs.find(b => b.slug === slug || b.id === slug);
+  if (!blog) {
+    // Let next() proceed to static blog-post.html so the client can display the friendly error UI
+    return next();
+  }
+
+  try {
+    const host = req.get('host') || 'universalfoundationindia.com';
+    const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+    const protocol = isLocal ? 'http' : (req.headers['x-forwarded-proto'] || 'https');
+    const baseUrl = `${protocol}://${host}`;
+
+    const canonicalPath = `/blog-post.html?slug=${encodeURIComponent(blog.slug || blog.id)}`;
+    const templatePath = path.join(__dirname, 'blog-post.html');
+    if (!fs.existsSync(templatePath)) {
+      return next();
+    }
+
+    const templateHtml = fs.readFileSync(templatePath, 'utf8');
+    const renderedHtml = injectBlogMetaTags(templateHtml, blog, baseUrl, canonicalPath);
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.send(renderedHtml);
+  } catch (err) {
+    console.error('[blog-post SSR] Failed to inject dynamic OG tags:', err);
+    return next();
+  }
+});
+
 // ─── SERVE FRONTEND STATIC FILES ────────────────────────────
 // Mount workspace root directory as static content
 app.use(express.static(path.join(__dirname)));
